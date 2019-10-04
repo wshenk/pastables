@@ -1333,8 +1333,8 @@ metagoofil.py -d [domain] -l [no. of] -f [type] -o results.html
 ** Web directory enumeration
 nikto -h <target> <options>
 dirbuster
-gobuster -u http://10.11.1.71/ -w /usr/share/seclists/Discovery/Web-Content/common.txt -s '200,204,301,302,307,403,500' -e
-gobuster -u http://10.11.1.71/ -w /usr/share/seclists/Discovery/Web-Content/CGIs.txt -s '200,204,301,302,307,403,500' -e
+gobuster dir -u http://10.11.1.71/ -w /usr/share/seclists/Discovery/Web-Content/common.txt -s '200,204,301,302,307,403,500' -e
+gobuster dir -u http://10.11.1.71/ -w /usr/share/seclists/Discovery/Web-Content/CGIs.txt -s '200,204,301,302,307,403,500' -e
 wikto
 goolag scanner
 
