@@ -275,6 +275,7 @@ nmap --script -sV rpc-grind 10.11.1.72
 ##############################
 nmap -p 389 --script ldap-rootdse 10.10.10.107
 
+ldapsearch -LLL -x -H ldap://10.10.10.107 -b '' -s base "(objectClass=*)"
 ldapsearch -h 10.10.10.107 -p 389 -x -s base -b '' "(objectClass=*)" "*" +
 -h ldap server
 -p port of ldap
@@ -285,8 +286,29 @@ ldapsearch -h 10.10.10.107 -p 389 -x -s base -b '' "(objectClass=*)" "*" +
 ldapsearch -h 10.10.10.107 -p 389 -x -b "dc=example,dc=com"
 ldapsearch -h 10.10.10.107 -p 389 -x -b "dc=hackthebox,dc=htb"
 
+# list out all object classes
+ldapsearch -h 10.81.2.21 -p 389 -x -b "dc=example,dc=com" | grep objectClass | sort | uniq
+
+#Get a list of all domain users
+#credentialed
+ldapsearch -LLL -x -H ldap://10.10.10.107 -D "jar-jar.binks@pwny.lab" -w Welcome2015 -b "dc=example,dc=com" "(objectClass=user)" sAMAccountNameuserPrincipalNamememberOf
+
+#non credentialed
+ldapsearch -LLL -x -H ldap://10.10.10.107 -b "dc=example,dc=com" "(objectClass=user)" sAMAccountName userPrincipalName memberOf
+
+#alternative object class
+ldapsearch -LLL -x -H ldap://10.10.10.107 -b "dc=example,dc=com" "(objectClass=person)" sAMAccountName userPrincipalName memberOf
+
+
 jxplorer
 
+
+#bloodhound
+neo4j console
+default creds: neo4j/neo4j
+http://localhost:7474/
+change password
+bloodhound
 
 ##############################
 ######## SMTP ENUM ###########
@@ -443,6 +465,8 @@ host -a <domain name> <dns server>
 dig axfr @<dns server> <domain name>
 dig mx @<dns server> <domain name>
 dig a @<dns server> <domain name>
+
+
 ###################################
 ####    PROXYCHAINS           #####
 ###################################
