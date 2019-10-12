@@ -1048,6 +1048,14 @@ ls -aRl /etc/ | awk '$1 ~ /w.$/' 2>/dev/null        # Other
 
 find /etc/ -readable -type f 2>/dev/null               # Anyone
 find /etc/ -readable -type f -maxdepth 1 2>/dev/null   # Anyone
+
+#find readable ssh keys?
+find /home -name .ssh -perm -o=r -perm -o=x -maxdepth 2 -exec find {} -perm -o=r  \; 2>/dev/null
+
+#find readable bash_history
+find /home -name .bash_history -perm -o=r -maxdepth 2 2>/dev/null
+
+
 #what can be found in /var/?
 ls -alh /var/log
 ls -alh /var/mail
