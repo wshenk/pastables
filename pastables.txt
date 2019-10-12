@@ -121,6 +121,9 @@ db_nmap -sV -iL lab-445-open.txt --top-ports 20 -oG lab-windows-versions.txt
 nmap -Pn -n -p 139,445 --script smb-os-discovery.nse -iL lab-445-open.txt -oG lab-smb-os-disc.txt
 db_nmap -Pn -n -p 139,445 --script smb-os-discovery.nse -iL lab-445-open.txt -oG lab-smb-os-disc.txt
 
+# Share Enum
+nmap -PS445 -p445 --script=smb-enum-shares,smb-ls --script-args=ls.maxdepth=10,smbdomain=<DOMAIN>,smbuser=<USER>,smbpass='<PASSWORD>',smb-ls.share=PubShare <FQDN>
+
 grep Windows lab-smb-os-disc.txt | cut -d " " -f 2 > lab-windows-smb.txt
 
 # Vuln Testing - SMB NSE 
@@ -209,6 +212,10 @@ python /opt/nullinux/nullinux.py -all <ip>
 use auxiliary/scanner/smb/smb_version
 set RHOSTS  <IP>
 run 
+
+#mount samba share=> use vers=1.0
+mount -v -t cifs -o username=<username>,vers=1.0 //10.81.2.40/users /tmp/smbdir
+
 
 smb-enum-users.nse
 nmap -Pn -n -p 139,445 --script smb-enum-users.nse -iL lab-windows-smb.txt -oG lab-smb-users-enum.txt
