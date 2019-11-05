@@ -708,6 +708,11 @@ wget https:/server.edu:443/somepage --ca-certificate=mycertfile.pem
 
 
 ##############################
+####### WEBSOCKET    #########
+##############################
+websocat wss://10.11.90.134:8443/coreserver/ws -k
+
+##############################
 ####### APACHE JSERV #########
 ##############################
 apt install libapache2-mod-jk
