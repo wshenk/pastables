@@ -1720,3 +1720,49 @@ chmod +x rh-cve-2016-5195_5.sh
 gcc -pthread 40839.c -o dirty -lcrypt
 ./dirty firefart4
 
+
+#############################
+#####     GDB         #######
+#############################
+#breakpoint offset from fxn
+break *(main+658)
+#breakpoint at fxn
+b modbus_reply
+#breakpoint at mem addr
+b *0xb7fbc864
+
+
+#next line
+n
+#next instr
+ni
+#step into line
+s
+#step into instr
+si
+
+#print
+p <item to print>
+#print ptr
+p &rsp
+#print struct
+p *mb_mapping
+
+x/10rw 0xbffff68c
+x/1000wr rsp
+x/100rw 0xbffff68c
+x/4x 0xbffff69c
+
+info symbol 0x8040f30
+
+info frame
+info variables
+info locals
+info args
+
+set *0xbffff69c = 0x8048f30
+
+#rop
+print &system
+find &system,+9999999,"/bin/sh"
+
