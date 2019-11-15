@@ -1,4 +1,3 @@
-lubrchhjcrdnjggkhehujrcldrujt
 ##############################
 ########  MONITORING #########
 ##############################
@@ -1803,11 +1802,7 @@ p64
 #pack 64 bit
 
 #ghidra
-#symbol tree -> what functions are there -> you can call ihc
-vvhjfredllggfhclfhhjtcchgnbdlgbneunkvndcegkt
-vvhjfredllggvnfienjujrtveftgdlfgcufuihghrlbc
-vvhjfredllggjvvtgtvcrklelkddgjhbfdeudgnlnukg
-rhose
+#symbol tree -> what functions are there -> you can call
 
 ropper --file <filename> --search "pop r
 
