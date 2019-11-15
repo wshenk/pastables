@@ -1,3 +1,4 @@
+lubrchhjcrdnjggkhehujrcldrujt
 ##############################
 ########  MONITORING #########
 ##############################
@@ -1753,16 +1754,62 @@ x/1000wr rsp
 x/100rw 0xbffff68c
 x/4x 0xbffff69c
 
+#read instructions
+x/i <addr>
+
 info symbol 0x8040f30
 
 info frame
 info variables
 info locals
 info args
+info registers
 
 set *0xbffff69c = 0x8048f30
 
 #rop
 print &system
 find &system,+9999999,"/bin/sh"
+search '/bin/sh/'
 
+cyclic <number o bytes>
+cyclic -l <bytes in eip>
+
+#if program waiting for input, Ctrl+c and you can go back to gdb
+
+disassemble <fxn>
+
+#inside of pwntools/gdb
+shell
+
+#rop with aslr
+#look for libc
+#calculate libc address
+
+vmmap 
+#get libc baseaddr (the only executable libc or the lowest addr?)
+
+p <known libc addr> - <libc base addr>
+
+#or...
+p/x system - <known libcaddr>
+vvhjfredllggdbfhdebhhggvldjrjhtidljibggedfcu
+
+#python pwn tools
+#normally see big endian
+p32
+#pack 32 bit
+p64
+#pack 64 bit
+
+#ghidra
+#symbol tree -> what functions are there -> you can call ihc
+vvhjfredllggfhclfhhjtcchgnbdlgbneunkvndcegkt
+vvhjfredllggvnfienjujrtveftgdlfgcufuihghrlbc
+vvhjfredllggjvvtgtvcrklelkddgjhbfdeudgnlnukg
+rhose
+
+ropper --file <filename> --search "pop r
+
+#32bit - always on stack
+#64bit - sometimes paramter in register
