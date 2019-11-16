@@ -1792,7 +1792,6 @@ p <known libc addr> - <libc base addr>
 
 #or...
 p/x system - <known libcaddr>
-vvhjfredllggdbfhdebhhggvldjrjhtidljibggedfcu
 
 #python pwn tools
 #normally see big endian
