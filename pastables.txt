@@ -1721,6 +1721,11 @@ chmod +x rh-cve-2016-5195_5.sh
 gcc -pthread 40839.c -o dirty -lcrypt
 ./dirty firefart4
 
+#############################
+#####  SOCAT      ###########
+#############################
+#connect a binary to a socket
+socat TCP-LISTEN:2323,reuseaddr,fork EXEC:./executable
 
 #############################
 #####     GDB         #######
