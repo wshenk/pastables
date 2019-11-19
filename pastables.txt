@@ -1727,6 +1727,13 @@ gcc -pthread 40839.c -o dirty -lcrypt
 #connect a binary to a socket
 socat TCP-LISTEN:2323,reuseaddr,fork EXEC:./executable
 
+
+#############################
+#####   OBJDUMP      ########
+#############################
+objdump -R <binary>
+
+
 #############################
 #####     GDB         #######
 #############################
