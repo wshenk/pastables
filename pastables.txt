@@ -85,6 +85,11 @@ sudo mount -t vboxsf VMShared /root/Shared
 
 
 ##############################
+##### WHOIS            #######
+##############################
+whois -h whois.arin.net <orgname>
+
+##############################
 ##### UNICORN SCAN     #######
 ##############################
 #tcp scan
@@ -582,6 +587,7 @@ host -a <domain name> <dns server>
 dig axfr @<dns server> <domain name>
 dig mx @<dns server> <domain name>
 dig a @<dns server> <domain name>
+dig any @<dns server> <domain name>
 
 
 ###################################
@@ -720,6 +726,19 @@ wget https:/server.edu:443/somepage --ca-certificate=mycertfile.pem
 ####### WEBSOCKET    #########
 ##############################
 websocat wss://10.11.90.134:8443/coreserver/ws -k
+
+##############################
+####### APACHE VHOST #########
+##############################
+#can only be accessed by url
+#need to add named websites to hosts file
+#use passive scanner to look for websites being visited
+#if multiple names resolve to the same addr -> name based website
+
+echo "<ip> <fqdn>" >> /etc/hosts
+
+dig axfr @<dns ip> <fqdn> +nostat +nocomments +nocmd
+#^find other names on the same ip via zone transfer
 
 ##############################
 ####### APACHE JSERV #########
