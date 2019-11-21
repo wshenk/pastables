@@ -1629,6 +1629,9 @@ finger @internal@external
 nc <ip> 80
 curl -i -X OPTIONS http://10.11.1.39
 
+whatweb <ip or fqdn>
+whatweb -l #list known plugins/webservices
+
 ** firefox plugins
 	firecat
 	add n edit cookies
@@ -1649,6 +1652,9 @@ nikto -h <target> <options>
 dirbuster
 gobuster dir -u http://10.11.1.71/ -w /usr/share/seclists/Discovery/Web-Content/common.txt -s '200,204,301,302,307,403,500' -e
 gobuster dir -u http://10.11.1.71/ -w /usr/share/seclists/Discovery/Web-Content/CGIs.txt -s '200,204,301,302,307,403,500' -e
+wfuzz -c -z file,/usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt --hc=404 http://<ip>/FUZZ/
+wfuzz -c -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt --hc=404 http://<ip>/FUZZ.php
+wfuzz -c -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt -w colors.txt --hc=404 http://<ip>/FUZ2ZFUZZ.php
 wikto
 goolag scanner
 
