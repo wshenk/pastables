@@ -27,6 +27,13 @@ gnome-screenshot -a -f screenshot.png
 eog screenshot.png
 
 ##############################
+####  CA CERTS          ######
+##############################
+openssl x509 -inform DER -in <.cer file> -out <.crt file>
+mv <.crt file> /usr/local/share/ca-certificates/
+update-ca-certificates
+
+##############################
 ######## MSFCONSOLE ##########
 ##############################
 systemctl start postgresql 
@@ -1735,7 +1742,10 @@ _
 *** Overflow vulns
 Ax1024+
 
-
+##############################
+#### WORDPRESS SCAN ##########
+##############################
+wpscan -u http://<fqdn> --enumerate t --enumerate p --enumerate u
 
 ##############################
 #### DIRTY COW         #######
