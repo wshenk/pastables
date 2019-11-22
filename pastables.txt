@@ -1817,7 +1817,6 @@ b modbus_reply
 #breakpoint at mem addr
 b *0xb7fbc864
 
-
 #next line
 n
 #next instr
