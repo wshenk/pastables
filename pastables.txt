@@ -76,7 +76,6 @@ vulns
 fg
 bg
 
-
 #import custom module
 mkdir -p $HOME/.msf4/modules/exploits/linux/http/
 cp /usr/share/exploitdb/exploits/linux/remote/10610.rb $HOME/.msf4/modules/exploits/linux/http/
