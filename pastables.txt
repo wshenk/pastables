@@ -11,6 +11,11 @@ apt-get update
 apt-get install -y virtualbox-guest-x11
 reboot
 
+VBoxManage showvminfo default
+VBoxManage controlvm default natpf1 "myapp,tcp,,9000,,9000"
+VBoxManage modifyvm default --cpus 2
+VBoxManage modifyvm default --memory 4096
+
 ##############################
 ####### DOCKER MAC   #########
 ##############################
