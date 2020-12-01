@@ -12,6 +12,17 @@ apt-get install -y virtualbox-guest-x11
 reboot
 
 ##############################
+####### DOCKER MAC   #########
+##############################
+brew install docker docker-machine
+brew cask install virtualbox
+docker-machine create --driver virtualbox default
+docker-machine env default
+eval "$(docker-machine env default)"
+docker run hello-world
+docker-machine stop default
+
+##############################
 ######## VIM MAGIC ###########
 ##############################
 #select all & copy
@@ -213,6 +224,9 @@ sudo /opt/nessus/sbin/nessuscli fix --secure --set proxy_port=3128
 
 /opt/nessus/sbin/nessuscli fetch --register xxxx-xxxx-xxxx-xxxx
 
+/opt/nessus/sbin/nessuscli lsuser
+/opt/nessus/sbin/nessuscli chpasswd username
+/opt/nessus/sbin/nessuscli adduser
 
 systemctl start nessusd
 
