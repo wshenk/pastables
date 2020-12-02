@@ -397,6 +397,20 @@ http://localhost:7474/
 change password
 bloodhound
 
+##############################
+### Currently logged in ######
+##############################
+reg query \\<computername>\HKEY_USERS /s /c /k /e /f "Volatile Environment"
+
+for /F "tokens=*" %F in (computerlist.txt) do START /b reg query \\%F\HKEY_USERS /s /c /k /e /f "Volatile Environment" > sids_%F.txt
+
+for /F "tokens=*" %F in (computerlist.txt) do START /b .\PsLoggedon64.exe -accepteula -nobanner \\%F > psloggedon_%F.txt
+
+##############################
+### USER INFO w/SID     ######
+##############################
+wmic useraccount get * /format:list
+wmic useraccount where (sid = "S-1-5-21-1698188384-1693678267-1543859470-6637") get * /format:list
 
 ##############################
 ## IKE Internet Key Exchange #
@@ -755,6 +769,8 @@ powershell -noprofile -noninteractive -command "21..23 | % {echo ((new-object Ne
 powershell -noprofile -noninteractive -command "22 | % {echo ((new-object Net.Sockets.TcpClient).Connect("""10.1.1.118""",$_)) """Port $_ is open!"""} 2>$null"
 powershell -noprofile -noninteractive -command "3306 | % {echo ((new-object Net.Sockets.TcpClient).Connect("""10.1.1.118""",$_)) """Port $_ is open!"""} 2>$null"
 
+C:\Windows\SysNative\WindowsPowerShell\v1.0\powershell.exe Set-MpPreference -DisableRealtimeMonitoring $false
+C:\Windows\SysNative\WindowsPowerShell\v1.0\powershell.exe Get-MpPreference
 
 ###################################
 #### FTP DOWNLOAD            ######
