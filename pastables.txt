@@ -28,6 +28,12 @@ docker run hello-world
 docker-machine stop default
 
 ##############################
+######   OWASP ZAP    ########
+##############################
+# Domain context regex
+^(?:https?:\/\/)?([a-zA-Z0-9\.\-]*)domain\.com([\/\?])?
+
+##############################
 ######## VIM MAGIC ###########
 ##############################
 #select all & copy
