@@ -2104,3 +2104,4 @@ egrep -Ri --color '(cred|pass|user|secret)' .
 semgrep --config auto
 
 semgrep --config auto --json -o semgrep.json
+semgrep --config auto --vim -o semgrep.txt
