@@ -2093,3 +2093,9 @@ ropper --file <filename> --search "pop r
 
 #32bit - always on stack
 #64bit - sometimes paramter in register
+
+#######################################
+### Source Code Review
+#######################################
+find ./ -type f -name '*.*' | sed 's/.*\.//g' | sort |  uniq -c | sort -k1
+egrep -Ri --color '(cred|pass|user|secret)' . 
