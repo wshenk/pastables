@@ -2098,4 +2098,8 @@ ropper --file <filename> --search "pop r
 ### Source Code Review
 #######################################
 find ./ -type f -name '*.*' | sed 's/.*\.//g' | sort |  uniq -c | sort -k1
+
 egrep -Ri --color '(cred|pass|user|secret)' . 
+
+semgrep --config auto
+
