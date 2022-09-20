@@ -1935,6 +1935,18 @@ with open("serialized_file.pik", "rb") as pickled_file:
       pickled.dump(evil_pickle_file)
     except Exception as e:
       print("Error writing evil file! ", e)
+      
+##############################
+# Test Pickle Exploit       ##
+##############################
+import pickle
+
+in_file = open("serialized_file.pik.evil", "rb")
+data = in_file.read()
+in_file.close()
+
+pickle.loads(data)
+exit()
 
 
 ##############################
