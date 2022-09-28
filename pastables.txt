@@ -2149,6 +2149,9 @@ find ./ -type f -name '*.*' | sed 's/.*\.//g' | sort |  uniq -c | sort -k1
 
 egrep -Ri --color '(cred|pass|user|secret)' . 
 
+# React App XSS
+egrep -R '(innerHTML|outerHTML|dangerouslySetInnerHTML|createRef|findDOMNode|href=\{|src=\{)' --color .
+
 semgrep --config auto
 
 semgrep --config auto --json -o semgrep.json
