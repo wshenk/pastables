@@ -2156,3 +2156,11 @@ semgrep --config auto
 
 semgrep --config auto --json -o semgrep.json
 semgrep --config auto --vim -o semgrep.txt
+
+#######################################
+### AWS
+#######################################
+# Get Principal Types in IAM Role Trust Policy Documents
+aws iam list-roles --query 'Roles[*].AssumeRolePolicyDocument.Statement[*].Principal[][]' | jq .[] | jq keys[] | sort | uniq
+
+
