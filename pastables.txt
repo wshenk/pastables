@@ -2169,6 +2169,14 @@ aws iam list-roles | jq '.Roles[].AssumeRolePolicyDocument.Statement[].Principal
 aws iam list-roles | jq '.Roles[].AssumeRolePolicyDocument.Statement[].Principal | values[] | if type=="string" then . else .[] end' | sort | uniq
 
 # *********************************
+# Find Principal Values in IAM Role Trust Policy Documents containing ARNs
+aws iam list-roles | jq -r '.Roles[].AssumeRolePolicyDocument.Statement[].Principal | values[] | if type=="string" then . else .[] end' | sort | uniq | egrep 'arn:.*'
+
+# *********************************
+# Get AWS Account IDs from Principal ARNs in IAM Role Trust Policy Documents 
+aws iam list-roles | jq -r '.Roles[].AssumeRolePolicyDocument.Statement[].Principal | values[] | if type=="string" then . else .[] end' | sort | uniq | egrep 'arn:.*' | cut -d':' -f5 | sort | uniq
+
+# *********************************
 # Get Roles by Principal Type in Trust Policy Documents
 SEARCH_VAL=
 aws iam list-roles | jq ".Roles[] | (select(.AssumeRolePolicyDocument.Statement[].Principal | keys [] | if type==\"string\" then . else .[] end | match(\"${SEARCH_VAL}\")))"
