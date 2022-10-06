@@ -2161,6 +2161,19 @@ semgrep --config auto --vim -o semgrep.txt
 ### AWS
 #######################################
 # Get Principal Types in IAM Role Trust Policy Documents
-aws iam list-roles --query 'Roles[*].AssumeRolePolicyDocument.Statement[*].Principal[][]' | jq .[] | jq keys[] | sort | uniq
+aws iam list-roles | jq '.Roles[].AssumeRolePolicyDocument.Statement[].Principal | keys[] | if type=="string" then . else .[] end' | sort | uniq
 
+# Get Principal Values in IAM Role Trust Policy Documents
+aws iam list-roles | jq '.Roles[].AssumeRolePolicyDocument.Statement[].Principal | values[] | if type=="string" then . else .[] end' | sort | uniq
 
+# Get Roles by Principal Type in Trust Policy Documents
+aws iam list-roles | jq '.Roles[] | (select(.AssumeRolePolicyDocument.Statement[].Principal | keys [] | if type=="string" then . else .[] end | match("<search value here>")))'
+
+aws iam list-roles | jq '.Roles[] | (select(.AssumeRolePolicyDocument.Statement[].Principal | keys [] | if type=="string" then . else .[] end | match("Federated")))'
+aws iam list-roles | jq '.Roles[] | (select(.AssumeRolePolicyDocument.Statement[].Principal | keys [] | if type=="string" then . else .[] end | match("AWS")))'
+aws iam list-roles | jq '.Roles[] | (select(.AssumeRolePolicyDocument.Statement[].Principal | keys [] | if type=="string" then . else .[] end | match("Service")))'
+
+# Get Roles by Principal Value in Trust Policy Documents
+aws iam list-roles | jq '.Roles[] | (select(.AssumeRolePolicyDocument.Statement[].Principal | values [] | if type=="string" then . else .[] end | match("<search value here>")))'
+
+aws iam list-roles | jq '.Roles[] | (select(.AssumeRolePolicyDocument.Statement[].Principal | values [] | if type=="string" then . else .[] end | match("cognito")))'
