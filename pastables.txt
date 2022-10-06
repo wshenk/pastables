@@ -2191,3 +2191,11 @@ aws apigateway get-rest-apis | jq ".[][] | select(.name | match(\"${SEARCH_VAL}\
 SEARCH_VAL=
 aws apigateway get-rest-apis | jq ".[][] | select(.name | match(\"${SEARCH_VAL}\"))"  | jq -r ".policy" | sed 's/^/"/g' | sed 's/$/"/g' | jq 'fromjson'
 
+# Get APIG ID by APIG Name
+SEARCH_VAL=
+aws apigateway get-rest-apis | jq ".[][] | select(.name | match(\"${SEARCH_VAL}\")) | .id"
+
+# Get APIG Authorizers by APIG Name
+SEARCH_VAL=
+aws apigateway get-authorizers --rest-api-id $(aws apigateway get-rest-apis | jq -r ".[][] | select(.name | match(\"${SEARCH_VAL}\")) | .id")
+
