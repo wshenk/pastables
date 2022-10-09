@@ -2256,6 +2256,7 @@ aws apigateway get-request-validator --rest-api-id $APIG_ID --request-validator-
 # Get APIG Resources by APIG ID
 APIG_ID=
 aws apigateway get-resources --rest-api-id $APIG_ID
+aws apigateway get-resources --rest-api-id $APIG_ID | jq '.items[].id'
 
 # *********************************
 # Get APIG Integration by APIG ID, Resource ID, and HTTP Method
@@ -2264,5 +2265,14 @@ RES_ID=
 METHOD=
 aws apigateway get-integration --rest-api-id $APIG_ID --resource-id $RES_ID --http-method $METHOD
 
-
-
+# *********************************
+# Get All APIG Integrations by APIG ID
+APIG_ID=
+resources=$(aws apigateway get-resources --rest-api-id $APIG_ID)
+echo $resources | jq -c '.items[]' | while read resource; do
+id=$(echo $resource | jq -r .id)
+methods=$(echo $resource | jq -rc '.resourceMethods // empty | keys')
+for method in $(echo $methods | jq -rc '.[]'); do
+   echo $id $method && aws apigateway get-integration --rest-api-id $APIG_ID --resource-id $id --http-method $method
+done
+done
