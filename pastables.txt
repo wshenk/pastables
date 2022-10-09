@@ -2231,3 +2231,38 @@ aws apigateway get-rest-apis | jq ".[][] | select(.name | match(\"${SEARCH_VAL}\
 SEARCH_VAL=
 aws apigateway get-authorizers --rest-api-id $(aws apigateway get-rest-apis | jq -r ".[][] | select(.name | match(\"${SEARCH_VAL}\")) | .id")
 
+# *********************************
+# Get APIG Authorizers by APIG ID
+APIG_ID=
+aws apigateway get-authorizers --rest-api-id $APIG_ID
+
+# *********************************
+# Get APIG Request Validators by APIG Name
+SEARCH_VAL=
+aws apigateway get-request-validators --rest-api-id $(aws apigateway get-rest-apis | jq -r ".[][] | select(.name | match(\"${SEARCH_VAL}\")) | .id")
+
+# *********************************
+# Get APIG Request Validators by APIG ID
+APIG_ID=
+aws apigateway get-request-validators --rest-api-id $APIG_ID
+
+# *********************************
+# Get APIG Request Validator by APIG ID and Validator ID
+APIG_ID=
+VALIDATOR_ID=
+aws apigateway get-request-validator --rest-api-id $APIG_ID --request-validator-id $VALIDATOR_ID
+
+# *********************************
+# Get APIG Resources by APIG ID
+APIG_ID=
+aws apigateway get-resources --rest-api-id $APIG_ID
+
+# *********************************
+# Get APIG Integration by APIG ID, Resource ID, and HTTP Method
+APIG_ID=
+RES_ID=
+METHOD=
+aws apigateway get-integration --rest-api-id $APIG_ID --resource-id $RES_ID --http-method $METHOD
+
+
+
