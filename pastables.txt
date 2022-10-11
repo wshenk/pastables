@@ -2277,3 +2277,25 @@ for method in $(echo $methods | jq -rc '.[]'); do
    echo $id $method $res_path && aws apigateway get-integration --rest-api-id $APIG_ID --resource-id $id --http-method $method
 done
 done
+
+# *********************************
+# Cognito Identity Pools
+aws cognito-identity list-identity-pools --max-results 10
+
+IDPOOL_ID=
+aws cognito-identity describe-identity-pool --identity-pool-id $IDPOOL_ID
+aws cognito-identity get-identity-pool-roles --identity-pool-id=$IDPOOL_ID
+aws cognito-identity list-identities --identity-pool-id=$IDPOOL_ID --max-results 10
+
+ID_ID=
+aws cognito-identity describe-identity --identity-id $ID_ID
+
+# *********************************
+# Cognito User Pools
+aws cognito-idp list-user-pools --max-results 10
+
+USRPOOL_ID=
+aws cognito-idp describe-user-pool --user-pool-id $USRPOOL_ID
+aws cognito-idp describe-risk-configuration --user-pool-id $USRPOOL_ID
+aws cognito-idp list-identity-providers --user-pool-id $USRPOOL_ID
+aws cognito-idp list-resource-servers --user-pool-id $USRPOOL_ID --max-results 10
