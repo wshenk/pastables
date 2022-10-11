@@ -2299,3 +2299,7 @@ aws cognito-idp describe-user-pool --user-pool-id $USRPOOL_ID
 aws cognito-idp describe-risk-configuration --user-pool-id $USRPOOL_ID
 aws cognito-idp list-identity-providers --user-pool-id $USRPOOL_ID
 aws cognito-idp list-resource-servers --user-pool-id $USRPOOL_ID --max-results 10
+aws cognito-idp list-user-pool-clients --user-pool-id $USRPOOL_ID
+
+USRPOOLCLIENT_ID=
+aws cognito-idp describe-user-pool-client --user-pool-id $USRPOOL_ID --client-id $USRPOOLCLIENT_ID
