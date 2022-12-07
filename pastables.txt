@@ -2193,6 +2193,11 @@ aws iam list-roles | jq ".Roles[] | (select(.AssumeRolePolicyDocument.Statement[
 aws iam list-roles | jq '.Roles[] | (select(.AssumeRolePolicyDocument.Statement[].Principal | values [] | if type=="string" then . else .[] end | match("cognito")))'
 
 # *********************************
+# Get Roles by Role Name
+SEARCH_VAL=
+aws iam list-roles | jq ".Roles[] | (select(.RoleName | if type==\"string\" then . else .[] end | match(\"${SEARCH_VAL}\")))"
+
+# *********************************
 # List Role Policies (Inline and Attached) by Role Name
 ROLE_NAME=
 aws iam list-role-policies --role-name=${ROLE_NAME}
