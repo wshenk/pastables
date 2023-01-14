@@ -43,6 +43,15 @@ docker-machine stop default
 :%!<insert command here>
 
 ##############################
+###### SSH Stuff ############
+##############################
+ssh -M [...] # to enable reusable socket, less pw typing
+#~/.ssh/config
+Host *
+  ControlMaster auto
+  ControlPath ~/.ssh/ssh_mux_%h_%p_%r
+
+##############################
 ###### SCREENSHOT ############
 ##############################
 gnome-screenshot -a -f screenshot.png
