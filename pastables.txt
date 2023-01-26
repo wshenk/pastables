@@ -17,6 +17,15 @@ VBoxManage modifyvm default --cpus 2
 VBoxManage modifyvm default --memory 4096
 
 ##############################
+####### MAC SCREENSHOTS  #####
+##############################
+#current settings
+defaults read com.apple.screencapture
+
+#reset 
+defaults delete com.apple.screencapture name
+
+##############################
 ####### DOCKER MAC   #########
 ##############################
 brew install docker docker-machine
