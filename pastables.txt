@@ -2336,7 +2336,11 @@ aws ec2 describe-instances --query "Reservations[*].Instances[*].join(' : ',[Ins
 aws ec2 describe-instances --query "Reservations[*].Instances[*].join(' : ',[InstanceId,State.Name || ''])"
 
 # *********************************
-# EC2 IMDSv1 without jq
+# EC2 VPC Peering Connections
+aws ec2 describe-vpc-peering-connections --query "VpcPeeringConnections[*].join(' : ',[VpcPeeringConnectionId,Status.Code,AccepterVpcInfo.OwnerId,AccepterVpcInfo.VpcId,AccepterVpcInfo.Region,AccepterVpcInfo.CidrBlock,RequesterVpcInfo.OwnerId,RequesterVpcInfo.VpcId,RequesterVpcInfo.Region,RequesterVpcInfo.CidrBlock || ''])"
+
+# *********************************
+# EC2 IMDSv1
 result=$(curl -XGET http://169.254.169.254/latest/meta-data/identity-credentials/ec2/security-credentials/ec2-instance)
 
 # *********************************
