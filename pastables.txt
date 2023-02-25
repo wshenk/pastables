@@ -2344,7 +2344,7 @@ result=$(curl -XGET http://169.254.169.254/latest/meta-data/identity-credentials
 result=$(aws sts assume-role --role-arn ${ROLE_ARN} --role-session-name tempsession)
 
 # *********************************
-# Store Creds from STS or IMDS (wihthout jq)
+# Store Creds from STS or IMDS (without jq)
 AccessKeyId=$(echo $result | grep AccessKeyId | cut -d '"' -f4)
 SecretAccessKey=$(echo $result | grep SecretAccessKey | cut -d '"' -f4)
 Token=$(echo $result | grep Token | cut -d '"' -f4)
